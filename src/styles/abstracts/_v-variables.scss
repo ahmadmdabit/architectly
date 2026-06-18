@@ -1,0 +1,173 @@
+// ============================================================
+// Architectly — Design Tokens & CSS Custom Properties (ported verbatim from v1)
+// ============================================================
+
+$breakpoints: (
+  "sm": 480px,
+  "md": 600px,
+  "lg": 640px,
+  "xl": 768px,
+  "2xl": 960px,
+  "wide": 1024px,
+) !default;
+
+$space-scale: (
+  0: 0, 1: 2px, 2: 4px, 3: 6px, 4: 8px, 5: 10px, 6: 12px, 7: 14px, 8: 16px,
+  9: 18px, 10: 20px, 11: 22px, 12: 24px, 14: 28px, 16: 32px, 18: 36px,
+  22: 44px, 24: 48px, 28: 56px, 40: 80px,
+) !default;
+
+$font-weights: (
+  "normal": 500, "semibold": 600, "bold": 700, "extrabold": 800,
+) !default;
+
+:root {
+  --sp-green: #1db954;
+  --sp-green-light: #1ed760;
+  --sp-green-dark: #169c46;
+  --sp-black: #121212;
+  --sp-near-black: #181818;
+  --sp-dark: #282828;
+  --sp-mid: #404040;
+  --sp-grey: #535353;
+  --sp-light-grey: #b3b3b3;
+  --sp-off-white: #f6f6f6;
+
+  --color-accent: #0eff36;
+  --color-accent-2: #509bf5;
+  --color-warn: #f59e0b;
+  --color-danger: #ff5572;
+  --color-success: var(--sp-green);
+
+  --color-bg: var(--sp-black);
+  --color-bg-alt: #1a1a1a;
+  --color-surface: var(--sp-near-black);
+  --color-surface-2: var(--sp-dark);
+  --color-surface-3: #2a2a2a;
+  --color-surface-glass: rgba(18, 18, 18, 0.85);
+  --color-surface-glass-scrolled: rgba(18, 18, 18, 0.96);
+  --color-surface-overlay: rgba(0, 0, 0, 0.7);
+  --color-footer-bg: rgba(0, 0, 0, 0.25);
+
+  --color-text: #ffffff;
+  --color-text-muted: var(--sp-light-grey);
+  --color-text-soft: #8a8a8a;
+  --color-text-on-primary: var(--sp-black);
+
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-border-strong: rgba(255, 255, 255, 0.14);
+  --color-border-primary-dim: rgba(29, 185, 84, 0.25);
+
+  --color-primary: var(--sp-green);
+  --color-primary-hover: var(--sp-green-light);
+  --color-primary-soft: rgba(29, 185, 84, 0.12);
+  --color-primary-soft-2: rgba(29, 185, 84, 0.1);
+  --color-primary-soft-3: rgba(29, 185, 84, 0.05);
+
+  --color-focus-ring: var(--color-primary);
+  --color-selection-bg: var(--color-primary);
+  --color-selection-text: var(--sp-black);
+  --color-danger-soft: rgba(226, 33, 52, 0.1);
+  --color-danger-glow: rgba(226, 33, 52, 0.15);
+  --color-success-soft: rgba(29, 185, 84, 0.15);
+  --color-accent-soft: rgba(175, 40, 150, 0.15);
+  --color-warn-soft: rgba(245, 158, 11, 0.15);
+  --color-destructive-hover-soft: rgba(226, 33, 52, 0.15);
+
+  --font-sans: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Source Serif 4", "Iowan Old Style", Georgia, serif;
+  --font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+
+  --font-size-2xs: 0.65rem;
+  --font-size-xs: 0.7rem;
+  --font-size-sm: 0.72rem;
+  --font-size-base-sm: 0.75rem;
+  --font-size-md: 0.78rem;
+  --font-size-base: 0.8rem;
+  --font-size-lg: 0.82rem;
+  --font-size-xl: 0.85rem;
+  --font-size-1xl: 0.875rem;
+  --font-size-2xl: 0.92rem;
+  --font-size-3xl: 0.95rem;
+  --font-size-4xl: 1rem;
+  --font-size-5xl: 1.05rem;
+  --font-size-6xl: 1.1rem;
+  --font-size-7xl: 1.25rem;
+  --font-size-8xl: 1.4rem;
+  --font-size-9xl: 1.5rem;
+  --font-size-10xl: 1.6rem;
+  --font-size-11xl: 2rem;
+
+  --font-weight-normal: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  --line-height-tight: 1.05;
+  --line-height-snug: 1.25;
+  --line-height-normal: 1.4;
+  --line-height-relaxed: 1.5;
+  --line-height-loose: 1.55;
+  --line-height-paragraph: 1.75;
+
+  --letter-spacing-tighter: -0.03em;
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-snug: -0.02em;
+  --letter-spacing-normal: -0.015em;
+  --letter-spacing-soft: -0.01em;
+  --letter-spacing-wide: 0.01em;
+  --letter-spacing-wider: 0.05em;
+  --letter-spacing-widest: 0.06em;
+  --letter-spacing-ultra: 0.08em;
+
+  --space-0: 0px; --space-1: 2px; --space-2: 4px; --space-3: 6px; --space-4: 8px;
+  --space-5: 10px; --space-6: 12px; --space-7: 14px; --space-8: 16px; --space-9: 18px;
+  --space-10: 20px; --space-11: 22px; --space-12: 24px; --space-14: 28px; --space-16: 32px;
+  --space-18: 36px; --space-22: 44px; --space-24: 48px; --space-28: 56px; --space-40: 80px;
+
+  --header-height: 64px;
+  --max-width: 1200px;
+  --max-width-interview: 1100px;
+  --modal-width: 640px;
+
+  --border-width-thin: 1px;
+  --border-width-medium: 1.5px;
+  --border-width-thick: 2px;
+  --border-width-accent: 3px;
+  --border-width-heavy: 4px;
+
+  --radius-xs: 3px;
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 999px;
+
+  --shadow-color-primary: rgba(29, 185, 84, 0.35);
+  --shadow-color-primary-btn: rgba(29, 185, 84, 0.4);
+  --shadow-color-black-40: rgba(0, 0, 0, 0.4);
+  --shadow-color-black-50: rgba(0, 0, 0, 0.5);
+  --shadow-color-black-55: rgba(0, 0, 0, 0.55);
+  --shadow-color-white-06: rgba(255, 255, 255, 0.06);
+
+  --shadow-sm: 0 2px 6px var(--shadow-color-black-40);
+  --shadow: 0 4px 16px var(--shadow-color-black-50);
+  --shadow-lg: 0 16px 48px var(--shadow-color-black-55);
+  --shadow-glow: 0 8px 32px var(--shadow-color-primary);
+  --shadow-header: 0 2px 20px var(--shadow-color-black-40);
+  --shadow-focus-ring: 0 0 0 3px var(--shadow-color-white-06);
+  --shadow-focus-primary: 0 0 0 2px var(--color-primary);
+  --shadow-btn-primary: 0 6px 20px var(--shadow-color-primary-btn);
+
+  --transition-fast: 120ms cubic-bezier(0.3, 0, 0.4, 1);
+  --transition: 200ms cubic-bezier(0.3, 0, 0.4, 1);
+  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow-fade: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-shake: 0.4s;
+  --transition-spin: 1s linear infinite;
+
+  --blur-glass: blur(16px) saturate(180%);
+  --blur-backdrop: blur(4px);
+}

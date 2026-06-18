@@ -1,0 +1,28 @@
+@use "../abstracts/_v-mixins" as *;
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+:where(a, button, input, textarea, summary, select, .btn) { @include interactive-base; }
+
+::selection {
+  background: var(--color-selection-bg);
+  color: var(--color-selection-text);
+}
+
+a {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}

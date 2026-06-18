@@ -1,0 +1,17 @@
+@use "../abstracts/_v-mixins" as *;
+
+// Mobile tweaks shared across views.
+@include respond-to("md") {
+  .container { padding: var(--space-14) var(--space-10); }
+  .welcome { padding-top: var(--space-12); }
+  .welcome-title { font-size: 2rem; }
+  .document-container { padding: var(--space-14); }
+  .document-title { font-size: var(--font-size-10xl); }
+  .question-text { font-size: var(--font-size-8xl); }
+  .modal { width: calc(100vw - var(--space-14)); }
+}
+
+@include respond-to("sm") {
+  .brand .brand-tag { display: none; }
+  .header-nav .btn { padding: var(--space-4) var(--space-8); font-size: var(--font-size-base); }
+}

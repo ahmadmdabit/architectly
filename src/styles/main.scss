@@ -1,0 +1,45 @@
+// ============================================================
+// Architectly — Main Stylesheet (Modern @use/@forward)
+// ============================================================
+
+// -----------------------------------------------------------------------------
+// 1. Abstracts — variables, functions, mixins (forwarded so partials can @use)
+// -----------------------------------------------------------------------------
+@forward "abstracts/_v-variables";
+@forward "abstracts/_v-functions";
+@forward "abstracts/_v-mixins";
+
+// -----------------------------------------------------------------------------
+// 2. Base
+// -----------------------------------------------------------------------------
+@use "base/_v-reset";
+@use "base/_v-typography";
+@use "base/_v-animations";
+
+// -----------------------------------------------------------------------------
+// 3. Layout
+// -----------------------------------------------------------------------------
+@use "layout/_v-container";
+@use "layout/_v-header";
+@use "layout/_v-footer";
+
+// -----------------------------------------------------------------------------
+// 4. Components
+// -----------------------------------------------------------------------------
+@use "components/_v-buttons";
+@use "components/_v-banner";
+@use "components/_v-welcome";
+@use "components/_v-interview";
+@use "components/_v-generating";
+@use "components/_v-result";
+@use "components/_v-modal";
+@use "components/_v-toast";
+@use "components/_v-library";
+
+// -----------------------------------------------------------------------------
+// 5. Utilities
+// -----------------------------------------------------------------------------
+@use "utilities/_v-scrollbar";
+@use "utilities/_v-print";
+@use "utilities/_v-responsive";
+@use "utilities/_v-rtl";

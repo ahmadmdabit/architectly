@@ -1,0 +1,75 @@
+@use "../abstracts/_v-mixins" as *;
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--header-height);
+  @include glass-effect;
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+  transition: background var(--transition), box-shadow var(--transition);
+
+  &.scrolled {
+    background: var(--color-surface-glass-scrolled);
+    box-shadow: var(--shadow-header);
+  }
+
+  .header-inner {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-8);
+    color: var(--color-text);
+
+    .brand-mark {
+      width: 32px; height: 32px;
+      display: inline-grid;
+      place-items: center;
+      img { width: 100%; height: 100%; display: block; }
+    }
+    .brand-name {
+      font-weight: 800;
+      font-size: var(--font-size-6xl);
+      letter-spacing: var(--letter-spacing-snug);
+    }
+    .brand-tag {
+      font-size: var(--font-size-base-sm);
+      color: var(--color-text-muted);
+      padding: 2px var(--space-5);
+      border-radius: var(--radius-full);
+      border: var(--border-width-thin) solid var(--color-border);
+      margin-inline-start: var(--space-3);
+    }
+  }
+
+  .header-nav {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-6);
+  }
+}
+
+.lang-switch {
+  position: relative;
+  .lang-select {
+    appearance: none;
+    background: var(--color-surface-2);
+    color: var(--color-text);
+    border: var(--border-width-thin) solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 6px var(--space-10) 6px var(--space-8);
+    font-size: var(--font-size-1xl);
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color var(--transition), background var(--transition);
+    &:hover { border-color: var(--color-border-strong); background: var(--color-surface-3); }
+  }
+}

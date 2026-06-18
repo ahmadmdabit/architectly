@@ -1,0 +1,76 @@
+// Mixins
+@use "sass:map";
+@use "_v-variables" as *;
+
+@mixin respond-to($key) {
+  $bp: map.get($breakpoints, $key);
+  @if $bp {
+    @media (max-width: $bp) { @content; }
+  } @else { @warn "Breakpoint '#{$key}' not found."; }
+}
+
+@mixin respond-from($key) {
+  $bp: map.get($breakpoints, $key);
+  @if $bp {
+    @media (min-width: $bp) { @content; }
+  } @else { @warn "Breakpoint '#{$key}' not found."; }
+}
+
+@mixin hover {
+  @media (hover: hover) { &:hover { @content; } }
+}
+
+@mixin focus-visible {
+  &:focus-visible {
+    outline: var(--border-width-thin) solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+@mixin interactive-base {
+  outline: none;
+  @include focus-visible;
+}
+
+@mixin card-base {
+  background: var(--color-surface);
+  border: var(--border-width-thin) solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow);
+}
+
+@mixin container-base {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-12);
+}
+
+@mixin text-gradient($start, $end, $deg: 120deg) {
+  background: linear-gradient($deg, $start 0%, $end 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@mixin glass-effect($bg-var: --color-surface-glass, $blur-var: --blur-glass) {
+  background: var($bg-var);
+  backdrop-filter: var($blur-var);
+  -webkit-backdrop-filter: var($blur-var);
+}
+
+@mixin sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@mixin flex-center($direction: row) {
+  display: flex;
+  flex-direction: $direction;
+  align-items: center;
+  justify-content: center;
+}

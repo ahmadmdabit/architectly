@@ -1,0 +1,51 @@
+// ============================================================
+// RTL overrides — applied when <html dir="rtl"> (Arabic).
+// Targets only layout-sensitive components; logical properties
+// (margin-inline, padding-inline, inset-inline-*) already handle most cases.
+// ============================================================
+
+[dir="rtl"] {
+  // ---- Header ----
+  .app-header .brand { flex-direction: row-reverse; }
+  .app-header .brand .brand-tag { margin-inline-start: 0; margin-inline-end: var(--space-3); }
+
+  // ---- Buttons: flip arrows ----
+  // The interview "Back" button text contains "← Back" / "Continue →".
+  // We don't restyle text content, but we do flip transforms used as arrows.
+  .picker-card .picker-cta { direction: rtl; }
+
+  // ---- Progress bar fill grows from the start edge (right in RTL) ----
+  .progress-track { direction: rtl; }
+  .progress-fill { background: linear-gradient(270deg, var(--sp-green) 0%, var(--sp-green-light) 100%); }
+
+  // ---- Rail history ----
+  .rail-history-item { text-align: right; }
+
+  // ---- Multi-text remove sits opposite of the input ----
+  .multi-text-row { flex-direction: row; } // already correct via logical flow
+
+  // ---- Choice option check moves to the start edge ----
+  .choice-option { flex-direction: row; }
+
+  // ---- Result action bar: keep wrap, but mirror visual flow ----
+  .result-actions { direction: rtl; }
+  .result-actions > * { direction: rtl; }
+
+  // ---- Modal close button stays on the visually-trailing edge automatically
+  //      via flex; nothing to do.
+
+  // ---- Toast slides in from the start edge (left in RTL) ----
+  .toast { animation-name: toastInRtl; }
+  @keyframes toastInRtl {
+    from { opacity: 0; transform: translateX(-20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  // ---- Library row arrow flips visually ----
+  .library-row { direction: rtl; }
+  .library-row-info { direction: rtl; }
+
+  // ---- Wide-screen interview grid: left rail moves to the right ----
+  // CSS Grid uses logical column flow by default, so this is automatic via dir.
+  // Sticky positioning still works.
+}

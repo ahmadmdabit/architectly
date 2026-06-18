@@ -1,0 +1,37 @@
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #121212 !important;
+  }
+  .app-header,
+  .app-footer,
+  .toast-stack,
+  .modal-root,
+  .banner-host,
+  .result-actions,
+  .result-footer,
+  .interview-rail,
+  .history-panel { display: none !important; }
+
+  .document-container {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+  }
+  .document-body,
+  .document-title,
+  .document-meta,
+  .document-type-badge {
+    color: #121212 !important;
+    background: transparent !important;
+  }
+  .document-body {
+    .doc-section { page-break-inside: avoid; }
+    h1, h2, h3, h4 { page-break-after: avoid; color: #121212 !important; }
+    a { color: #1DB954 !important; }
+    table, figure { page-break-inside: avoid; }
+    code, pre { background: #f1f1f1 !important; color: #121212 !important; }
+    blockquote { background: #f0fdf4 !important; color: #121212 !important; }
+  }
+}

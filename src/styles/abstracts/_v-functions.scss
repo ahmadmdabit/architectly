@@ -1,0 +1,31 @@
+// Functions
+@use "sass:math";
+
+@function strip-unit($n) {
+  @if type-of($n) == "number" and not unitless($n) {
+    @return math.div($n, ($n * 0 + 1));
+  }
+  @return $n;
+}
+
+@function rem($px, $base: 16) {
+  @if unitless($px) {
+    @return math.div($px, $base) * 1rem;
+  }
+  @return math.div(strip-unit($px), $base) * 1rem;
+}
+
+@function em($px, $base: 16) {
+  @if unitless($px) {
+    @return math.div($px, $base) * 1em;
+  }
+  @return math.div(strip-unit($px), $base) * 1em;
+}
+
+@function tint($color, $percentage) {
+  @return mix(white, $color, $percentage);
+}
+
+@function shade($color, $percentage) {
+  @return mix(black, $color, $percentage);
+}
