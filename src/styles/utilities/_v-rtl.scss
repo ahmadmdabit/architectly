@@ -5,9 +5,19 @@
 // ============================================================
 
 [dir="rtl"] {
-  // ---- Header ----
+  // ---- Header: full horizontal mirror (logo rightmost, then name, then tag) ----
+  .app-header .header-inner { flex-direction: row-reverse; }
   .app-header .brand { flex-direction: row-reverse; }
   .app-header .brand .brand-tag { margin-inline-start: 0; margin-inline-end: var(--space-3); }
+  .app-header .header-nav { flex-direction: row-reverse; }
+
+  // ---- Arabic typography ----
+  body,
+  .btn,
+  .form-input,
+  .form-textarea {
+    font-family: "Cairo", "Inter", var(--font-sans);
+  }
 
   // ---- Buttons: flip arrows ----
   // The interview "Back" button text contains "← Back" / "Continue →".

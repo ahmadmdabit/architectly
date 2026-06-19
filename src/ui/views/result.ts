@@ -1,169 +1,195 @@
-// result.ts — Generated document view: per-section refine + inline contenteditable edit.
-import { el, on } from "../components/dom.ts";
-import { effect } from "../../core/signal.ts";
+// result.ts — The final document viewer with section-level AI refinement.
+import { effect, batch } from "../../core/signal.ts";
 import {
-  busyLabel,
-  docType as docTypeSig,
-  documentMeta,
   documentText,
+  documentMeta,
   editingHeading,
   history,
+  docType as docTypeSig,
   isBusy,
+  busyLabel,
   refineDraft,
-  refineTarget,
-  showRaw,
 } from "../../core/store.ts";
-import { renderMarkdown } from "../../services/markdown/render.ts";
-import { extractHeadings, extractSection, splitByHeadings } from "../../services/markdown/sections.ts";
-import { htmlToMarkdown } from "../../services/markdown/roundtrip.ts";
-import { t } from "../../i18n/index.ts";
+import { t, currentLocale } from "../../i18n/index.ts";
 import {
-  applyManualEdit,
+  exportDocx,
+  exportPdf,
+  exportHtml,
+  exportMarkdown,
+  printDoc,
   applyRefinement,
   beginRefine,
   cancelRefine,
   commitInlineEdit,
   copyDoc,
   endInlineEdit,
-  exportDocx,
-  exportHtml,
-  exportMd,
-  exportPdf,
-  printDoc,
   saveCurrentToLibrary,
   startOver,
 } from "../../actions.ts";
-import { renderModal } from "../components/modal.ts";
+import { renderModal, type ModalOptions } from "../components/modal.ts";
+import { el, on, delegate } from "../components/dom.ts";
+import { renderProgress } from "../components/progress.ts";
+import { extractHeadings, extractSection, htmlToMarkdown, markdownToHtml } from "../../services/markdown/render.ts";
+import type { DocMeta } from "../../types.ts";
+import { dirOf } from "../../i18n/index.ts";
 
 export function renderResultView(): HTMLElement {
-  const section = el("section", { class: "result-screen fade-in" });
-
-  // Top action bar
-  section.appendChild(renderActionBar());
-
-  // Document container (subscribed)
-  const container = el("div", { class: "document-container" });
-  section.appendChild(container);
-  effect(() => renderDocument(container));
-
-  // Footer
-  const footer = el("div", { class: "result-footer" });
-  const back = el("button", { class: "btn btn-ghost", type: "button" }, [t("result.back")]);
-  on(back, "click", () => startOver());
-  footer.appendChild(back);
-  section.appendChild(footer);
-
-  // Refine modal (mounted into shared modal root)
+  const section = el("section", { class: "result fade-in" });
   effect(() => {
-    const target = refineTarget();
-    const root = document.getElementById("modal-root");
-    if (!root) return;
-    if (!target) {
-      root.innerHTML = "";
-      return;
-    }
-    mountRefineModal(root, target.heading, target.originalContent);
+    section.innerHTML = "";
+    renderDocument(section);
   });
-
-  // Keyboard: Cmd/Ctrl+P prints
-  const onKey = (e: KeyboardEvent): void => {
-    if (e.key === "p" && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      printDoc();
-    }
-  };
-  document.addEventListener("keydown", onKey);
-  section.addEventListener("__cleanup", () => document.removeEventListener("keydown", onKey));
-
   return section;
 }
 
-function renderActionBar(): HTMLElement {
-  const bar = el("div", { class: "result-actions" });
-  effect(() => {
-    bar.innerHTML = "";
-    bar.appendChild(el("span", { class: "result-actions-title" }, [`📄 ${t("result.your", { docType: docTypeSig() ?? "" })}`]));
-    bar.appendChild(el("div", { class: "result-actions-divider" }));
-
-    const toggle = btn("btn-secondary btn-sm", showRaw() ? `👁 ${t("result.toggleRendered")}` : `</> ${t("result.toggleRaw")}`, () => showRaw.set(!showRaw.peek()));
-    bar.appendChild(toggle);
-
-    bar.append(
-      btn("btn-secondary btn-sm", `📋 ${t("result.copy")}`, () => void copyDoc()),
-      btn("btn-secondary btn-sm", `⬇ ${t("result.downloadMd")}`, () => void exportMd()),
-      btn("btn-secondary btn-sm", `🌐 ${t("result.downloadHtml")}`, () => void exportHtml()),
-      btn("btn-secondary btn-sm", `📄 ${t("result.downloadPdf")}`, () => void exportPdf()),
-      btn("btn-secondary btn-sm", `📝 ${t("result.downloadDocx")}`, () => void exportDocx()),
-      btn("btn-secondary btn-sm", `🖨 ${t("result.print")}`, () => printDoc()),
-      btn("btn-success btn-sm", `★ ${t("result.save")}`, () => void saveCurrentToLibrary()),
-      btn("btn-primary btn-sm", `+ ${t("result.new")}`, () => startOver()),
-    );
-  });
-  return bar;
-}
-
-function btn(cls: string, label: string, click: () => void): HTMLElement {
-  const b = el("button", { class: `btn ${cls}`, type: "button" }, [label]);
-  on(b, "click", click);
-  return b;
-}
-
 function renderDocument(container: HTMLElement): void {
-  container.innerHTML = "";
   const meta = documentMeta();
+
+  const actions = el("div", { class: "result-actions" });
+  actions.appendChild(
+    el("div", { class: "result-actions-bar" }, [
+      el("button", { class: "btn btn-ghost btn-sm", type: "button", "data-action": "copy" }, [t("result.copy")]),
+      el("button", { class: "btn btn-ghost btn-sm", type: "button", "data-action": "print" }, [t("result.print")]),
+      el("button", { class: "btn btn-ghost btn-sm", type: "button", "data-action": "export-md" }, [t("result.downloadMd")]),
+      el("button", { class: "btn btn-ghost btn-sm", type: "button", "data-action": "export-html" }, [t("result.downloadHtml")]),
+      el("button", { class: "btn btn-ghost btn-sm", type: "button", "data-action": "export-pdf" }, [t("result.downloadPdf")]),
+      el("button", { class: "btn btn-ghost btn-sm", type: "button", "data-action": "export-docx" }, [t("result.downloadDocx")]),
+    ]),
+  );
+  actions.querySelector(".result-actions-bar")!.appendChild(
+    el("button", { class: "btn btn-secondary btn-sm", type: "button", "data-action": "save" }, [t("result.save")]),
+  );
+  actions.querySelector(".result-actions-bar")!.appendChild(
+    el("button", { class: "btn btn-secondary btn-sm", type: "button", "data-action": "new" }, [t("result.newDocument")]),
+  );
+  delegate(actions, "click", "[data-action]", (_e, target) => {
+    const a = target.getAttribute("data-action");
+    if (a === "copy") copyDoc();
+    else if (a === "print") printDoc();
+    else if (a === "export-md") exportMarkdown();
+    else if (a === "export-html") exportHtml();
+    else if (a === "export-pdf") exportPdf();
+    else if (a === "export-docx") exportDocx();
+    else if (a === "save") saveCurrentToLibrary();
+    else if (a === "new") startOver();
+  });
+  container.appendChild(actions);
+
   const headers = el("div", { class: "document-header" });
   headers.appendChild(
     el("span", { class: "document-type-badge" }, [
       docTypeSig() === "BRD" ? `🏢 ${t("result.docTypeBrd")}` : `📱 ${t("result.docTypePrd")}`,
     ]),
   );
-  headers.appendChild(el("h1", { class: "document-title" }, [meta?.summary.title ?? "Untitled Project"]));
-  headers.appendChild(
-    el("p", { class: "document-meta" }, [
-      t("result.metaGenerated", {
-        date: meta ? new Date(meta.generatedAt).toLocaleString() : "—",
-        count: history().length,
-      }),
-    ]),
-  );
+  headers.appendChild(renderEditableTitle(meta?.summary.title ?? "Untitled Project"));
+  headers.appendChild(renderEditableMeta(meta));
   container.appendChild(headers);
 
   const body = el("div", { class: "document-body", id: "doc-body" });
-  if (showRaw()) {
-    body.appendChild(el("pre", { class: "raw" }, [documentText()]));
+  const headings = extractHeadings(documentText());
+  const sections = documentText().split(/(?=^## )/m).slice(1);
+  if (headings.length === 0) {
+    body.appendChild(el("p", { class: "muted" }, ["No structured content yet."]));
   } else {
-    body.appendChild(renderSections());
+    for (let i = 0; i < headings.length; i++) {
+      const content = sections[i] ?? "";
+      body.appendChild(renderSection(headings[i]!, content));
+    }
   }
   container.appendChild(body);
+
+  const footer = el("div", { class: "result-footer" });
+  footer.appendChild(
+    el("div", { class: "result-actions-bar", style: "justify-content: center;" }, [
+      el("button", { class: "btn btn-ghost btn-sm", type: "button", "data-action": "new" }, [t("result.newDocument")]),
+      el("button", { class: "btn btn-ghost btn-sm", type: "button", "data-action": "save" }, [t("result.save")]),
+    ]),
+  );
+  container.appendChild(footer);
+}
+
+function renderEditableTitle(initial: string): HTMLElement {
+  const h1 = el("h1", { class: "document-title inline-editable" });
+  const render = (): void => {
+    h1.innerHTML = "";
+    const span = el("span", { class: "inline-edit-value" }, [documentMeta.peek()?.summary.title ?? initial]);
+    h1.appendChild(span);
+    const btn = el("button", { class: "btn btn-link inline-edit-trigger", type: "button", "aria-label": t("result.edit") }, ["✎"]);
+    h1.appendChild(btn);
+    on(btn, "click", () => startInlineEdit(h1, span, (newVal) => {
+      const m = documentMeta.peek();
+      if (m) {
+        documentMeta.set({ ...m, summary: { ...m.summary, title: newVal } });
+        const text = documentText.peek();
+        const firstLine = text.split("\n")[0] ?? "";
+        if (firstLine.startsWith("# ")) {
+          documentText.set(`# ${newVal}\n${text.slice(firstLine.length + 1)}`);
+        }
+      }
+    }));
+  };
+  render();
+  return h1;
+}
+
+function renderEditableMeta(meta: DocMeta | null): HTMLElement {
+  const p = el("p", { class: "document-meta inline-editable" });
+  const span = el("span", { class: "inline-edit-value" }, [
+    meta ? t("result.metaGenerated", { date: new Date(meta.generatedAt).toLocaleString(), count: history().length }) : "",
+  ]);
+  p.appendChild(span);
+  return p;
+}
+
+function startInlineEdit(host: HTMLElement, span: HTMLElement, onCommit: (v: string) => void): void {
+  const original = span.textContent ?? "";
+  host.classList.add("editing");
+  const input = el("input", { type: "text", class: "form-input inline-edit-input", value: original }) as HTMLInputElement;
+  const ok = el("button", { class: "btn btn-primary btn-sm", type: "button" }, ["✓"]);
+  const cancel = el("button", { class: "btn btn-ghost btn-sm", type: "button" }, [t("result.refineModal.cancel")]);
+  span.replaceWith(input);
+  const btnHolder = host.querySelector(".inline-edit-trigger");
+  btnHolder?.replaceWith(ok, cancel);
+  input.focus();
+  input.select();
+  const finish = (commit: boolean): void => {
+    const newSpan = el("span", { class: "inline-edit-value" }, [commit && input.value.trim() ? input.value.trim() : original]);
+    input.replaceWith(newSpan);
+    const newBtn = el("button", { class: "btn btn-link inline-edit-trigger", type: "button", "aria-label": t("result.edit") }, ["✎"]);
+    ok.replaceWith(newBtn);
+    cancel.remove();
+    host.classList.remove("editing");
+    on(newBtn, "click", () => startInlineEdit(host, newSpan, onCommit));
+    if (commit && input.value.trim() && input.value.trim() !== original) onCommit(input.value.trim());
+  };
+  on(ok, "click", () => finish(true));
+  on(cancel, "click", () => finish(false));
+  on(input, "keydown", (e) => {
+    const k = (e as KeyboardEvent).key;
+    if (k === "Enter") { e.preventDefault(); finish(true); }
+    else if (k === "Escape") { e.preventDefault(); finish(false); }
+  });
 }
 
 function renderSections(): HTMLElement {
   const root = el("div", {});
   const headings = extractHeadings(documentText());
-  const blocks = splitByHeadings(documentText());
-  void headings;
-
-  for (const b of blocks) {
-    if (b.type === "h1" && b.text) {
-      root.appendChild(el("h1", { class: "doc-h1", id: "doc-top" }, [b.text]));
-      continue;
-    }
-    if (b.type === "section" && b.heading) {
-      root.appendChild(renderSection(b.heading, b.content));
-      continue;
-    }
-    if (b.type === "prelude" && b.content) {
-      const div = el("div", { class: "doc-prelude" });
-      div.innerHTML = renderMarkdown(b.content);
-      root.appendChild(div);
-    }
+  const sections = documentText().split(/(?=^## )/m).slice(1);
+  if (headings.length === 0) {
+    root.appendChild(el("p", { class: "muted" }, ["No structured content yet."]));
+    return root;
+  }
+  for (let i = 0; i < headings.length; i++) {
+    const content = sections[i] ?? "";
+    root.appendChild(renderSection(headings[i]!, content));
   }
   return root;
 }
 
 function renderSection(heading: string, content: string): HTMLElement {
-  const section = el("section", { class: "doc-section", id: `sec-${slug(heading)}` });
-  const head = el("header", { class: "doc-section-head" });
+  const section = el("section", { class: "doc-section", id: heading.replace(/\s+/g, "-").toLowerCase() });
+
+  const head = el("div", { class: "doc-section-head" });
   head.appendChild(el("h2", {}, [heading]));
 
   const isEditing = editingHeading() === heading;
@@ -180,69 +206,80 @@ function renderSection(heading: string, content: string): HTMLElement {
       }
     });
     head.appendChild(done);
+    const cancel = el("button", { class: "btn btn-link", type: "button" }, [t("result.refineModal.cancel")]);
+    on(cancel, "click", () => endInlineEdit());
+    head.appendChild(cancel);
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key === "Escape") { endInlineEdit(); document.removeEventListener("keydown", onKey); }
+    };
+    document.addEventListener("keydown", onKey);
   } else {
     const editBtn = el("button", { class: "btn btn-link", type: "button" }, [t("result.edit")]);
     on(editBtn, "click", () => editingHeading.set(heading));
     head.appendChild(editBtn);
 
     const refineBtn = el("button", { class: "btn btn-link", type: "button" }, [t("result.refine")]);
-    on(refineBtn, "click", () => beginRefine(heading));
+    on(refineBtn, "click", () => {
+      const el = section.querySelector<HTMLElement>(".doc-section-body");
+      if (el) mountRefineModal(section, heading, htmlToMarkdown(el));
+    });
     head.appendChild(refineBtn);
   }
   section.appendChild(head);
 
-  const body = el("div", { class: "doc-section-body" });
+  const body = el("div", { class: "doc-section-body", contenteditable: isEditing ? "plaintext-only" : undefined });
   if (isEditing) {
-    body.setAttribute("contenteditable", "true");
-    body.setAttribute("spellcheck", "true");
-    body.classList.add("editing");
+    body.textContent = content.replace(/^## .+\n\n/, "");
+  } else {
+    body.innerHTML = markdownToHtml(content);
   }
-  body.innerHTML = renderMarkdown(content);
   section.appendChild(body);
   return section;
 }
 
-function slug(s: string): string {
-  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "section";
-}
-
 function mountRefineModal(root: HTMLElement, heading: string, originalContent: string): void {
-  const body = el("div", {});
-  body.appendChild(el("label", { class: "form-label", for: "refineInput" }, [t("result.refineModal.label")]));
+  const promptLabel = el("label", { for: "refine-prompt" }, [t("result.refineModal.promptLabel")]);
   const textarea = el("textarea", {
-    id: "refineInput",
+    id: "refine-prompt",
     class: "form-textarea",
     rows: "3",
-    placeholder: t("result.refineModal.placeholder"),
+    placeholder: t("result.refineModal.promptPlaceholder"),
   }) as HTMLTextAreaElement;
-  textarea.value = refineDraft();
+
+  beginRefine(heading, originalContent, textarea);
+  const body = el("div", { class: "refine-modal-body" });
+  body.appendChild(promptLabel);
   textarea.addEventListener("input", () => refineDraft.set(textarea.value));
   body.appendChild(textarea);
 
-  const details = el("details", { class: "history-panel", open: "" });
-  details.appendChild(el("summary", {}, [t("result.refineModal.currentSection")]));
-  // Editable raw markdown of the section, for manual save
-  const sectionTa = el("textarea", { class: "form-textarea raw-section", rows: "10" }) as HTMLTextAreaElement;
+  // Read-only preview of the current section content (no manual save).
+  const preview = el("details", { class: "history-panel" });
+  preview.appendChild(el("summary", {}, [t("result.refineModal.currentSection")]));
+  const sectionTa = el("textarea", {
+    class: "form-textarea raw-section",
+    rows: "10",
+    readonly: "",
+    "aria-readonly": "true",
+  }) as HTMLTextAreaElement;
   sectionTa.value = extractSection(documentText(), heading) || originalContent;
-  details.appendChild(sectionTa);
-  body.appendChild(details);
+  preview.appendChild(sectionTa);
+  body.appendChild(preview);
 
   const footer = el("div", { class: "modal-foot-inner" });
   const cancel = el("button", { class: "btn btn-ghost", type: "button" }, [t("result.refineModal.cancel")]);
   on(cancel, "click", () => cancelRefine());
-  const saveManual = el("button", { class: "btn btn-secondary", type: "button" }, [t("result.refineModal.saveManual")]);
-  on(saveManual, "click", () => applyManualEdit(sectionTa.value));
   const apply = el("button", { class: "btn btn-primary", type: "button" }, [
     isBusy() ? busyLabel() || t("result.refineModal.applying") : t("result.refineModal.apply"),
   ]);
   if (isBusy()) apply.setAttribute("disabled", "");
   on(apply, "click", () => void applyRefinement());
-  footer.append(cancel, saveManual, apply);
+  footer.append(cancel, apply);
 
   renderModal(root, {
     title: t("result.refineModal.title", { heading }),
     body,
     footer,
     onClose: () => cancelRefine(),
+    closeOnBackdrop: false,
   });
 }

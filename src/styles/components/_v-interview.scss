@@ -24,10 +24,7 @@
   flex-direction: column;
   gap: var(--space-12);
 
-  @include respond-from("wide") {
-    position: sticky;
-    top: calc(var(--header-height) + var(--space-12));
-  }
+  // Sticky removed: was causing sidebar to float over answer content on scroll.
 }
 
 .rail-history {
@@ -58,6 +55,10 @@
     flex: 0 0 auto;
   }
   .rail-q { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  &.active {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft-2);
+  }
 }
 
 // ---- Progress bar ----
@@ -114,6 +115,15 @@
   flex-wrap: wrap;
   margin-bottom: var(--space-10);
 }
+
+.assumption-review {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-10) !important;
+  border: var(--border-width-thin) solid var(--color-primary);
+}
+.assumption-review-hint { margin-top: var(--space-3); }
 .question-number {
   display: inline-flex;
   align-items: center;

@@ -4,15 +4,17 @@ import {
   allQuestions,
   answers,
   busyLabel,
+  assumptionReview,
   currentQuestion,
   docType as docTypeSig,
   history,
+  historyCursor,
   isBusy,
   pendingFollowUps,
 } from "../../core/store.ts";
 import { bus } from "../../core/eventBus.ts";
 import { currentLocale, t } from "../../i18n/index.ts";
-import type { AnswerValue, Question } from "../../types.ts";
+import type { AnswerValue, HistoryEntry, Question } from "../../types.ts";
 import { fallbackTitleFromVision, getNextQuestion } from "./engine.ts";
 import { getQuestionsForType } from "./questions.ts";
 import { deriveProjectTitle, generateAssumption } from "../ai/puter.ts";
@@ -92,6 +94,7 @@ function pushAnswer(q: Question, value: AnswerValue, extras: Partial<{ assumed: 
 export async function answerCurrent(value: AnswerValue): Promise<void> {
   const q = currentQuestion.peek();
   if (!q || isBusy.peek()) return;
+  const wasAssumptionReview = assumptionReview.peek();
   const isMulti = q.type === "multi-text";
   const normalized: AnswerValue = isMulti
     ? (Array.isArray(value) ? value : [String(value)]).map((v) => v.trim()).filter(Boolean)
@@ -101,7 +104,37 @@ export async function answerCurrent(value: AnswerValue): Promise<void> {
   if (isMulti && (normalized as string[]).length === 0) return;
   if (!isMulti && !normalized) return;
 
-  pushAnswer(q, normalized);
+  // Cursor mode: we are editing/reviewing an already-answered question.
+  const cursor = historyCursor.peek();
+  if (cursor !== null) {
+    const hist = [...history.peek()];
+    const entry = hist[cursor];
+    if (!entry) return;
+    hist[cursor] = {
+      ...entry,
+      answer: normalized,
+      assumed: wasAssumptionReview ? true : entry.assumed,
+      skipped: false,
+      assumeError: false,
+    };
+    history.set(hist);
+    answers.set({ ...answers.peek(), [q.id]: normalized });
+    assumptionReview.set(false);
+    if (cursor >= hist.length - 1) {
+      historyCursor.set(null);
+      isBusy.set(true);
+      busyLabel.set(t("interview.preparingNext"));
+      try { await advanceQuestion(); } finally { isBusy.set(false); busyLabel.set(""); }
+    } else {
+      historyCursor.set(cursor + 1);
+      const next = hist[cursor + 1];
+      if (next) loadQuestionFromHistory(next);
+    }
+    return;
+  }
+
+  pushAnswer(q, normalized, wasAssumptionReview ? { assumed: true } : {});
+  assumptionReview.set(false);
   const followUps = q.followUp ? q.followUp(normalized, answers.peek()) : [];
   pendingFollowUps.set(followUps);
 
@@ -126,54 +159,72 @@ export async function skipCurrent(): Promise<void> {
   const signal = newSignal();
   try {
     const assumption = await generateAssumption(q, history.peek(), type, currentLocale(), signal);
-    pushAnswer(q, assumption || "(skipped — no assumption generated)", { assumed: true });
+    // Don't auto-advance: show the generated assumption for user review.
+    const text = assumption || "(skipped — no assumption generated)";
+    currentQuestion.set({
+      ...q,
+      suggestedValue: text,
+    });
+    assumptionReview.set(true);
   } catch (err) {
     const msg = (err as Error)?.message ?? "AI unavailable";
     pushAnswer(q, `(skipped — ${msg})`, { skipped: true, assumeError: true });
     bus.emit("toast", { kind: "error", message: t("errors.assumeFailed", { title: q.text.slice(0, 40) }) });
-  } finally {
     pendingFollowUps.set([]);
-    try {
-      await advanceQuestion();
-    } catch {
-      /* ignore */
-    }
     isBusy.set(false);
     busyLabel.set("");
+    try { await advanceQuestion(); } catch { /* ignore */ }
+    return;
+  }
+  isBusy.set(false);
+  busyLabel.set("");
+}
+
+function loadQuestionFromHistory(entry: HistoryEntry): void {
+  const q = allQuestions.peek().find((x) => x.id === entry.id);
+  if (!q) return;
+  const suggested = Array.isArray(entry.answer) ? entry.answer.join("\n") : String(entry.answer ?? "");
+  currentQuestion.set({ ...q, suggestedValue: suggested });
+}
+
+/** Move to the previous answered question WITHOUT deleting answers. */
+export function goPrevious(): void {
+  const hist = history.peek();
+  if (hist.length === 0) return;
+  const cur = historyCursor.peek();
+  const nextIdx = cur === null ? hist.length - 1 : Math.max(0, cur - 1);
+  historyCursor.set(nextIdx);
+  loadQuestionFromHistory(hist[nextIdx]!);
+  assumptionReview.set(false);
+}
+
+/** Move to the next answered question (or back to the current unanswered position). */
+export async function goNext(): Promise<void> {
+  const hist = history.peek();
+  const cur = historyCursor.peek();
+  if (cur === null) return;
+  assumptionReview.set(false);
+  if (cur >= hist.length - 1) {
+    historyCursor.set(null);
+    pendingFollowUps.set([]);
+    isBusy.set(true);
+    busyLabel.set(t("interview.preparingNext"));
+    try { await advanceQuestion(); } finally { isBusy.set(false); busyLabel.set(""); }
+  } else {
+    const nextIdx = cur + 1;
+    historyCursor.set(nextIdx);
+    loadQuestionFromHistory(hist[nextIdx]!);
   }
 }
 
-export async function goBack(): Promise<void> {
-  if (history.peek().length === 0) return;
-  const last = [...history.peek()];
-  const popped = last.pop()!;
-  history.set(last);
-  const a = { ...answers.peek() };
-  delete a[popped.id];
-  answers.set(a);
-  pendingFollowUps.set([]);
-  isBusy.set(true);
-  busyLabel.set(t("interview.preparingPrevious"));
-  try {
-    await advanceQuestion();
-  } finally {
-    isBusy.set(false);
-    busyLabel.set("");
-  }
-}
-
-/** Jump back to a specific answered question (for clickable history rail). */
-export async function jumpToAnswered(id: string): Promise<void> {
+/** Jump to a specific answered question (non-destructive). */
+export function jumpToAnswered(id: string): void {
   const all = history.peek();
   const idx = all.findIndex((h) => h.id === id);
   if (idx === -1) return;
-  const kept = all.slice(0, idx);
-  history.set(kept);
-  const a: typeof answers.peek extends () => infer R ? R : never = { ...answers.peek() };
-  for (const h of all.slice(idx)) delete (a as Record<string, unknown>)[h.id];
-  answers.set(a);
-  pendingFollowUps.set([]);
-  await advanceQuestion();
+  historyCursor.set(idx);
+  assumptionReview.set(false);
+  loadQuestionFromHistory(all[idx]!);
 }
 
 /** Pre-populate state from a sample fixture and skip to the "complete" review screen. */

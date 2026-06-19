@@ -1,9 +1,10 @@
 // export/docx.ts — Real DOCX via the `docx` library. Lazy-loaded chunk.
 import { splitByHeadings } from "../markdown/sections.ts";
 import { safeFilename, triggerDownload } from "./filename.ts";
+import { currentLocale, dirOf } from "../../i18n/index.ts";
 
 export async function exportDocxFile(title: string, docType: string, doc: string): Promise<void> {
-  const { Document, Packer, Paragraph, HeadingLevel, TextRun, AlignmentType } = await import("docx");
+  const { Document, Packer, Paragraph, HeadingLevel, TextRun, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle } = await import("docx");
 
   const children: InstanceType<typeof Paragraph>[] = [];
 
@@ -26,14 +27,28 @@ export async function exportDocxFile(title: string, docType: string, doc: string
     if (b.type === "section" && b.heading) {
       children.push(new Paragraph({ heading: HeadingLevel.HEADING_2, children: [new TextRun({ text: b.heading, bold: true })] }));
     }
+    // Group lines into blocks; detect markdown tables and render them as DOCX Tables.
     const lines = b.content.split("\n");
-    for (const raw of lines) {
+    let i = 0;
+    while (i < lines.length) {
+      const raw = lines[i] ?? "";
       const l = raw.trim();
+      if (/^\|.+\|$/.test(l)) {
+        // Collect contiguous table lines
+        const tableLines: string[] = [];
+        while (i < lines.length && /^\|.+\|$/.test((lines[i] ?? "").trim())) {
+          tableLines.push((lines[i] ?? "").trim());
+          i++;
+        }
+        const table = buildDocxTable(tableLines, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, BorderStyle);
+        if (table) {
+          children.push(table as unknown as InstanceType<typeof Paragraph>);
+          continue;
+        }
+      }
       if (!l) {
         children.push(new Paragraph({ text: "" }));
-        continue;
-      }
-      if (/^[-*]\s+/.test(l)) {
+      } else if (/^[-*]\s+/.test(l)) {
         children.push(new Paragraph({ text: l.replace(/^[-*]\s+/, ""), bullet: { level: 0 } }));
       } else if (/^\d+\.\s+/.test(l)) {
         children.push(new Paragraph({ text: l.replace(/^\d+\.\s+/, ""), numbering: { reference: "default-numbering", level: 0 } }));
@@ -44,6 +59,7 @@ export async function exportDocxFile(title: string, docType: string, doc: string
       } else {
         children.push(new Paragraph({ children: [new TextRun({ text: l.replace(/[*_`]/g, "") })] }));
       }
+      i++;
     }
   }
 
@@ -64,4 +80,36 @@ export async function exportDocxFile(title: string, docType: string, doc: string
 
   const blob = await Packer.toBlob(document);
   triggerDownload(safeFilename(title, "docx"), blob, "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+}
+
+type DocxLib = typeof import("docx");
+
+function buildDocxTable(
+  lines: string[],
+  Paragraph: DocxLib["Paragraph"],
+  TextRun: DocxLib["TextRun"],
+  Table: DocxLib["Table"],
+  TableRow: DocxLib["TableRow"],
+  TableCell: DocxLib["TableCell"],
+  WidthType: DocxLib["WidthType"],
+  _BorderStyle: DocxLib["BorderStyle"],
+): InstanceType<DocxLib["Table"]> | null {
+  const parsed: { cells: string[]; isSep: boolean }[] = lines.map((ln) => {
+    const cells = ln.slice(1, -1).split("|").map((c) => c.trim());
+    const isSep = cells.every((c) => /^:?-+:?$/.test(c));
+    return { cells, isSep };
+  });
+  const dataRows = parsed.filter((r) => !r.isSep);
+  if (dataRows.length === 0) return null;
+  const rows = dataRows.map((r, idx) =>
+    new TableRow({
+      children: r.cells.map((c) =>
+        new TableCell({
+          children: [new Paragraph({ children: [new TextRun({ text: c.replace(/[*_`]/g, ""), bold: idx === 0 })] })],
+          width: { size: 100 / Math.max(r.cells.length, 1), type: WidthType.PERCENTAGE },
+        }),
+      ),
+    }),
+  );
+  return new Table({ rows, width: { size: 100, type: WidthType.PERCENTAGE } });
 }

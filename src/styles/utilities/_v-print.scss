@@ -1,7 +1,7 @@
 @media print {
   body {
     background: #ffffff !important;
-    color: #121212 !important;
+    color: #000000 !important;
   }
   .app-header,
   .app-footer,
@@ -23,15 +23,16 @@
   .document-title,
   .document-meta,
   .document-type-badge {
-    color: #121212 !important;
+    color: #000000 !important;
     background: transparent !important;
   }
   .document-body {
     .doc-section { page-break-inside: avoid; }
-    h1, h2, h3, h4 { page-break-after: avoid; color: #121212 !important; }
+    h1, h2, h3, h4 { page-break-after: avoid; color: #000000 !important; }
     a { color: #1DB954 !important; }
     table, figure { page-break-inside: avoid; }
-    code, pre { background: #f1f1f1 !important; color: #121212 !important; }
-    blockquote { background: #f0fdf4 !important; color: #121212 !important; }
+    code, pre { background: #f1f1f1 !important; color: #000000 !important; }
+    blockquote { background: #f0fdf4 !important; color: #000000 !important; }
+    p, li, td, th, span, strong, em { color: #000000 !important; }
   }
 }

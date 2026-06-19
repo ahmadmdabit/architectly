@@ -1,11 +1,11 @@
 // interview.ts — Interview view with wide-screen 2-column layout.
 import { el, on, delegate } from "../components/dom.ts";
 import { t } from "../../i18n/index.ts";
-import { answers, currentQuestion, history, isBusy, busyLabel, showStepDots, docType as docTypeSig } from "../../core/store.ts";
+import { answers, assumptionReview, currentQuestion, history, historyCursor, isBusy, busyLabel, showStepDots, docType as docTypeSig } from "../../core/store.ts";
 import { effect } from "../../core/signal.ts";
 import { progressPercent, stepNumber, totalEstimate } from "../../core/selectors.ts";
 import { renderProgress } from "../components/progress.ts";
-import { answerCurrent, goBack, jumpToAnswered, skipCurrent } from "../../services/interview/controller.ts";
+import { answerCurrent, goNext, goPrevious, jumpToAnswered, skipCurrent } from "../../services/interview/controller.ts";
 import { generateDocument } from "../../actions.ts";
 import type { Question } from "../../types.ts";
 
@@ -51,13 +51,21 @@ function renderActive(q: Question): HTMLElement {
   const input = renderInputFor(q);
   card.appendChild(input);
 
-  if (q.suggestedValue) {
+  if (q.suggestedValue && !assumptionReview.peek()) {
     card.appendChild(
       el("div", { class: "ai-suggestion" }, [
         el("span", { class: "tag tag-assumed" }, [t("interview.aiSuggested")]),
         el("span", { class: "ai-suggestion-text" }, [q.suggestedValue]),
       ]),
     );
+  }
+  if (assumptionReview.peek()) {
+    const review = el("div", { class: "ai-suggestion assumption-review" }, [
+      el("span", { class: "tag tag-assumed" }, [t("interview.aiAssumed")]),
+      el("div", { class: "ai-suggestion-text" }, [q.suggestedValue ?? ""]),
+      el("div", { class: "assumption-review-hint muted small" }, [t("interview.reviewAssumptionHint")]),
+    ]);
+    card.appendChild(review);
   }
 
   const errorEl = el("div", { class: "form-error", id: `error-${q.id}` }, [el("span", {}, ["⚠"]), ` ${t("interview.requiredField")}`]);
@@ -67,7 +75,7 @@ function renderActive(q: Question): HTMLElement {
   grid.appendChild(card);
 
   // History accordion below (mobile + desktop)
-  const aside = el("details", { class: "history-panel" });
+  const aside = el("details", { class: "history-panel", open: "" });
   aside.appendChild(el("summary", {}, [t("interview.answeredSoFar", { count: history().length })]));
   aside.appendChild(renderHistoryList(false));
   grid.appendChild(aside);
@@ -78,7 +86,8 @@ function renderActive(q: Question): HTMLElement {
 function renderRailHistory(): HTMLElement {
   const list = el("ol", { class: "rail-history" });
   for (const [i, h] of history().entries()) {
-    const li = el("li", { class: "rail-history-item", "data-id": h.id, role: "button", tabindex: "0" });
+    const isActive = historyCursor() === i;
+    const li = el("li", { class: `rail-history-item${isActive ? " active" : ""}`, "data-id": h.id, role: "button", tabindex: "0" });
     li.appendChild(el("span", { class: "q-num" }, [`${i + 1}.`]));
     li.appendChild(el("span", { class: "rail-q" }, [h.text]));
     if (h.assumed) li.appendChild(el("span", { class: "tag tag-assumed" }, [t("interview.aiAssumed")]));
@@ -227,9 +236,26 @@ function flashError(card: HTMLElement, errEl: HTMLElement, input: HTMLElement): 
 
 function renderButtons(q: Question, input: HTMLElement, card: HTMLElement, errEl: HTMLElement): HTMLElement {
   const group = el("div", { class: "button-group" });
-  const back = el("button", { type: "button", class: "btn btn-ghost", disabled: isBusy() ? "" : null }, [t("interview.back")]);
-  on(back, "click", () => void goBack());
-  group.appendChild(back);
+  const inCursorMode = historyCursor.peek() !== null;
+  const atFirstAnswer = historyCursor.peek() === 0;
+  const prev = el("button", {
+    type: "button",
+    class: "btn btn-ghost",
+    disabled: isBusy() || (inCursorMode && atFirstAnswer) ? "" : null,
+  }, [t("interview.previous")]);
+  on(prev, "click", () => goPrevious());
+  group.appendChild(prev);
+
+  if (inCursorMode && historyCursor.peek() !== null) {
+    const next = el("button", {
+      type: "button",
+      class: "btn btn-secondary",
+      disabled: isBusy() ? "" : null,
+    }, [t("interview.next")]);
+    on(next, "click", () => void goNext());
+    group.appendChild(el("div", { class: "button-group-right" }, [next]));
+    return group;
+  }
 
   const right = el("div", { class: "button-group-right" });
   const skip = el("button", { type: "button", class: "btn btn-secondary", disabled: isBusy() ? "" : null }, [
@@ -239,10 +265,14 @@ function renderButtons(q: Question, input: HTMLElement, card: HTMLElement, errEl
   right.appendChild(skip);
 
   const submit = el("button", { type: "button", class: "btn btn-primary btn-lg", disabled: isBusy() ? "" : null }, [
-    isBusy() ? t("interview.preparing") : t("interview.continue"),
+    isBusy() ? t("interview.preparing") : (assumptionReview.peek() ? t("interview.confirmAssumption") : t("interview.continue")),
   ]);
   on(submit, "click", () => {
-    const value = readValue(q, input);
+    let value: string | string[] = readValue(q, input);
+    // When reviewing an assumption with empty input, accept the suggested value.
+    if (assumptionReview.peek() && typeof value === "string" && !value.trim() && q.suggestedValue) {
+      value = q.suggestedValue;
+    }
     if (!isValid(q, value)) {
       flashError(card, errEl, input);
       return;
@@ -250,7 +280,7 @@ function renderButtons(q: Question, input: HTMLElement, card: HTMLElement, errEl
     void answerCurrent(value);
   });
   right.appendChild(submit);
-  group.appendChild(right);
+  group.append(right);
 
   // Enter / Ctrl+Enter shortcut
   if (input.tagName === "TEXTAREA") {
@@ -305,7 +335,7 @@ function renderComplete(): HTMLElement {
 
   const buttons = el("div", { class: "button-group button-group--center" });
   const back = el("button", { class: "btn btn-secondary", type: "button", disabled: isBusy() ? "" : null }, [t("interview.previous")]);
-  on(back, "click", () => void goBack());
+  on(back, "click", () => goPrevious());
   const generate = el("button", { class: "btn btn-success btn-lg", type: "button", disabled: isBusy() ? "" : null }, [
     t("interview.generate", { docType: docTypeSig() ?? "" }),
   ]);

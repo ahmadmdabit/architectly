@@ -13,6 +13,11 @@ import {
   startOver,
 } from "../../actions.ts";
 import { exportMarkdownFile } from "../../services/export/markdown.ts";
+import { exportHtmlFile } from "../../services/export/html.ts";
+import { currentLocale, dirOf } from "../../i18n/index.ts";
+import type { SavedDocument } from "../../types.ts";
+
+let openMenuId: string | null = null;
 
 export function renderLibraryView(): HTMLElement {
   void refreshLibrary();
@@ -72,8 +77,38 @@ export function renderLibraryView(): HTMLElement {
       case "exportMd":
         exportMarkdownFile(item.title, item.document);
         break;
+      case "exportHtml": {
+        const lang = currentLocale();
+        exportHtmlFile(item.title, item.docType, item.document, new Date(item.savedAt).toLocaleString(), dirOf(lang), lang);
+        break;
+      }
+      case "exportPdf": {
+        void import("../../actions.ts").then((a) => {
+          // Reuse the PDF pipeline by temporarily loading the doc
+          a.exportPdf();
+        });
+        break;
+      }
+      case "toggleMenu": {
+        const menu = target.closest<HTMLElement>(".library-row")?.querySelector<HTMLElement>(".library-dropdown-menu");
+        if (!menu) return;
+        const isOpen = menu.classList.contains("open");
+        document.querySelectorAll(".library-dropdown-menu.open").forEach((m) => m.classList.remove("open"));
+        if (!isOpen) { menu.classList.add("open"); openMenuId = id; } else { openMenuId = null; }
+        e.stopPropagation();
+        return;
+      }
     }
+    // Close any open menu after action
+    document.querySelectorAll(".library-dropdown-menu.open").forEach((m) => m.classList.remove("open"));
+    openMenuId = null;
   });
+
+  // Close menus when clicking outside
+  document.addEventListener("click", () => {
+    document.querySelectorAll(".library-dropdown-menu.open").forEach((m) => m.classList.remove("open"));
+    openMenuId = null;
+  }, { once: false });
 
   effect(() => {
     const items = searchLocal(library(), librarySearch());
@@ -86,32 +121,59 @@ export function renderLibraryView(): HTMLElement {
       );
       return;
     }
-    for (const item of items) list.appendChild(renderRow(item.id, item.docType, item.title, item.savedAt));
+    for (const item of items) list.appendChild(renderRow(item));
   });
 
   return section;
 }
 
-function renderRow(id: string, type: string, title: string, savedAt: string): HTMLElement {
-  const row = el("article", { class: "library-row", "data-id": id });
+function renderRow(item: SavedDocument): HTMLElement {
+  const row = el("article", { class: "library-row", "data-id": item.id });
   const info = el("div", { class: "library-row-info" }, [
-    el("span", { class: "library-badge" }, [type]),
+    el("span", { class: "library-badge" }, [item.docType]),
     el("div", { class: "library-row-text" }, [
-      el("div", { class: "library-row-title" }, [title]),
-      el("div", { class: "library-row-meta" }, [t("library.savedAt", { date: new Date(savedAt).toLocaleString() })]),
+      el("div", { class: "library-row-title" }, [item.title]),
+      el("div", { class: "library-row-meta" }, [t("library.savedAt", { date: new Date(item.savedAt).toLocaleString() })]),
     ]),
   ]);
-  const actions = el("div", { class: "library-row-actions" }, [
-    button("open", t("library.open"), "btn-primary"),
-    button("resume", t("library.resume"), "btn-secondary"),
-    button("rename", t("library.rename"), "btn-ghost"),
-    button("exportMd", t("library.exportMd"), "btn-ghost"),
-    button("delete", t("library.delete"), "btn-ghost btn-danger"),
-  ]);
+  const actions = el("div", { class: "library-row-actions" });
+  actions.appendChild(button("open", t("library.open"), "btn-primary"));
+  actions.appendChild(button("resume", t("library.resume"), "btn-secondary"));
+
+  // Dropdown menu
+  const dropdown = el("div", { class: "library-dropdown" });
+  const trigger = el("button", {
+    type: "button",
+    class: "btn btn-ghost btn-sm",
+    "data-action": "toggleMenu",
+    "aria-label": t("library.actions"),
+    "aria-haspopup": "true",
+  }, ["⋯"]);
+  const menu = el("div", { class: "library-dropdown-menu", role: "menu" });
+  menu.append(
+    menuButton("rename", t("library.rename")),
+    menuButton("exportMd", t("library.exportMd")),
+    menuButton("exportHtml", t("result.downloadHtml")),
+    menuButton("exportPdf", t("result.downloadPdf")),
+    el("div", { class: "library-dropdown-divider" }),
+    menuButton("delete", t("library.delete"), "danger"),
+  );
+  dropdown.append(trigger, menu);
+  actions.appendChild(dropdown);
+
   row.append(info, actions);
   return row;
 }
 
 function button(action: string, label: string, cls: string): HTMLElement {
   return el("button", { type: "button", class: `btn btn-sm ${cls}`, "data-action": action }, [label]);
+}
+
+function menuButton(action: string, label: string, variant?: "danger"): HTMLElement {
+  return el("button", {
+    type: "button",
+    class: `library-dropdown-item${variant === "danger" ? " danger" : ""}`,
+    role: "menuitem",
+    "data-action": action,
+  }, [label]);
 }

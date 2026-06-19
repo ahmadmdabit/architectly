@@ -8,6 +8,7 @@ export interface ModalOptions {
   footer: HTMLElement;
   onClose: () => void;
   ariaLabel?: string;
+  closeOnBackdrop?: boolean;
 }
 
 export function renderModal(root: HTMLElement, opts: ModalOptions): () => void {
@@ -34,7 +35,7 @@ export function renderModal(root: HTMLElement, opts: ModalOptions): () => void {
     opts.onClose();
   };
 
-  const offBackdrop = on(backdrop, "click", close);
+  const offBackdrop = opts.closeOnBackdrop === false ? () => {} : on(backdrop, "click", close);
   const offClose = on(head.querySelector("button")!, "click", close);
   const offEsc = on(document, "keydown", (e) => {
     if ((e as KeyboardEvent).key === "Escape") close();

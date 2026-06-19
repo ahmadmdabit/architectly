@@ -203,3 +203,28 @@
   justify-content: center;
   margin-top: var(--space-18);
 }
+
+.inline-editable {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  .inline-edit-trigger {
+    opacity: 0;
+    transition: opacity var(--transition);
+  }
+  &:hover .inline-edit-trigger { opacity: 1; }
+  &.editing {
+    outline: var(--border-width-medium) dashed var(--color-primary);
+    outline-offset: var(--space-3);
+    border-radius: var(--radius);
+    padding: var(--space-4);
+  }
+}
+.inline-edit-input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  color: inherit;
+  background: var(--color-surface-2);
+}

@@ -23,6 +23,9 @@ export const allQuestions = signal<readonly Question[]>([]);
 export const currentQuestion = signal<Question | null>(null);
 export const pendingFollowUps = signal<Question[]>([]);
 export const showStepDots = signal<boolean>(true);
+// Cursor-based history navigation (Previous/Next) — null means we're at the "next unanswered" position.
+export const historyCursor = signal<number | null>(null);
+export const assumptionReview = signal<boolean>(false);
 
 // --- Document ---
 export const documentText = signal<string>("");
@@ -61,6 +64,8 @@ export function resetAll(): void {
     allQuestions.set([]);
     currentQuestion.set(null);
     pendingFollowUps.set([]);
+    historyCursor.set(null);
+    assumptionReview.set(false);
     documentText.set("");
     documentMeta.set(null);
     streamBuffer.set("");

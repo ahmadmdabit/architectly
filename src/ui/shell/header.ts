@@ -2,7 +2,7 @@
 import logoUrl from "../../assets/images/logo.svg";
 import { clear, el, on } from "../components/dom.ts";
 import { effect } from "../../core/signal.ts";
-import { step, history as historySig } from "../../core/store.ts";
+import { step, history as historySig, documentText as documentTextSig } from "../../core/store.ts";
 import { t } from "../../i18n/index.ts";
 import { locale as localeSig } from "../../core/store.ts";
 import { renderLangSwitch } from "./langSwitch.ts";
@@ -32,7 +32,9 @@ export function renderHeader(): HTMLElement {
     ]);
     on(brand, "click", (e) => {
       e.preventDefault();
-      if (step.peek() === "interview" && historySig.peek().length > 0) {
+      // Mirror Start Over confirmation: any in-flight work (interview answers OR generated document) requires confirmation.
+      const hasWork = historySig.peek().length > 0 || documentTextSig.peek().length > 0;
+      if (step.peek() !== "welcome" && hasWork) {
         if (!confirm(t("errors.confirmStartOver"))) return;
       }
       startOver();
