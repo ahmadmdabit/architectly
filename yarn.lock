@@ -140,6 +140,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@fontsource/cairo@npm:^5.2.7":
+  version: 5.2.7
+  resolution: "@fontsource/cairo@npm:5.2.7"
+  checksum: 10c0/3e8e92b91a15e6029f8ac9653859b12edc5c8bf9d34bdac8dbba1687cf62550b43c5c0917eec29acd41562a7ff3d7305d6a8c64635e9a4b48fbbd8ea31cad838
+  languageName: node
+  linkType: hard
+
 "@heyputer/kv.js@npm:^0.2.1":
   version: 0.2.1
   resolution: "@heyputer/kv.js@npm:0.2.1"
@@ -753,6 +760,7 @@ __metadata:
   dependencies:
     "@eslint/eslintrc": "npm:^3.3.5"
     "@eslint/js": "npm:^10.0.1"
+    "@fontsource/cairo": "npm:^5.2.7"
     "@heyputer/puter.js": "npm:^2.5.3"
     "@types/node": "npm:^22.19.21"
     "@typescript-eslint/eslint-plugin": "npm:^8.60.1"

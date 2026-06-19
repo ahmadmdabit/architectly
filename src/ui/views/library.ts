@@ -17,8 +17,6 @@ import { exportHtmlFile } from "../../services/export/html.ts";
 import { currentLocale, dirOf } from "../../i18n/index.ts";
 import type { SavedDocument } from "../../types.ts";
 
-let openMenuId: string | null = null;
-
 export function renderLibraryView(): HTMLElement {
   void refreshLibrary();
   const section = el("section", { class: "library-screen fade-in" });
@@ -85,7 +83,7 @@ export function renderLibraryView(): HTMLElement {
       case "exportPdf": {
         void import("../../actions.ts").then((a) => {
           // Reuse the PDF pipeline by temporarily loading the doc
-          a.exportPdf();
+          void a.exportPdf();
         });
         break;
       }
@@ -94,20 +92,18 @@ export function renderLibraryView(): HTMLElement {
         if (!menu) return;
         const isOpen = menu.classList.contains("open");
         document.querySelectorAll(".library-dropdown-menu.open").forEach((m) => m.classList.remove("open"));
-        if (!isOpen) { menu.classList.add("open"); openMenuId = id; } else { openMenuId = null; }
+        if (!isOpen) { menu.classList.add("open"); }
         e.stopPropagation();
         return;
       }
     }
     // Close any open menu after action
     document.querySelectorAll(".library-dropdown-menu.open").forEach((m) => m.classList.remove("open"));
-    openMenuId = null;
   });
 
   // Close menus when clicking outside
   document.addEventListener("click", () => {
     document.querySelectorAll(".library-dropdown-menu.open").forEach((m) => m.classList.remove("open"));
-    openMenuId = null;
   }, { once: false });
 
   effect(() => {

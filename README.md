@@ -10,7 +10,7 @@ AI-powered, interview-driven BRD/PRD generator. Client-only, 100% TypeScript/HTM
 - **i18next** (en/tr/ar with RTL)
 - **marked + DOMPurify** for safe Markdown rendering
 - **jspdf + docx** for exports
-- Self-hosted Inter font
+- @fontsource/cairo (npm package)
 - No JavaScript or CSS frameworks
 
 ## Scripts

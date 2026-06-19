@@ -2,6 +2,12 @@
 // Architectly — Main Stylesheet (Modern @use/@forward)
 // ============================================================
 
+@forward '@fontsource/cairo/400.css';
+@forward '@fontsource/cairo/500.css';
+@forward '@fontsource/cairo/600.css';
+@forward '@fontsource/cairo/700.css';
+@forward '@fontsource/cairo/800.css';
+
 // -----------------------------------------------------------------------------
 // 1. Abstracts — variables, functions, mixins (forwarded so partials can @use)
 // -----------------------------------------------------------------------------

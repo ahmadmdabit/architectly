@@ -1,7 +1,6 @@
 // export/docx.ts — Real DOCX via the `docx` library. Lazy-loaded chunk.
 import { splitByHeadings } from "../markdown/sections.ts";
 import { safeFilename, triggerDownload } from "./filename.ts";
-import { currentLocale, dirOf } from "../../i18n/index.ts";
 
 export async function exportDocxFile(title: string, docType: string, doc: string): Promise<void> {
   const { Document, Packer, Paragraph, HeadingLevel, TextRun, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle } = await import("docx");
@@ -82,6 +81,7 @@ export async function exportDocxFile(title: string, docType: string, doc: string
   triggerDownload(safeFilename(title, "docx"), blob, "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
 }
 
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 type DocxLib = typeof import("docx");
 
 function buildDocxTable(

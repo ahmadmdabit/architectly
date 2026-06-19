@@ -1,42 +1,5 @@
-// Self-hosted Inter
-@font-face {
-  font-family: "Inter";
-  src: url("../../assets/fonts/Inter-400.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Inter";
-  src: url("../../assets/fonts/Inter-500.woff2") format("woff2");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Inter";
-  src: url("../../assets/fonts/Inter-600.woff2") format("woff2");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Inter";
-  src: url("../../assets/fonts/Inter-700.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "Inter";
-  src: url("../../assets/fonts/Inter-800.woff2") format("woff2");
-  font-weight: 800;
-  font-style: normal;
-  font-display: swap;
-}
-
 body {
-  font-family: var(--font-sans);
+  font-family: var(--font-sans-serif), var(--font-sans);
   background: linear-gradient(180deg, var(--color-bg-alt) 0%, var(--color-bg) 320px), var(--color-bg);
   background-attachment: fixed;
   color: var(--color-text);

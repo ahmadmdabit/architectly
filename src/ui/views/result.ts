@@ -1,5 +1,5 @@
 // result.ts — The final document viewer with section-level AI refinement.
-import { effect, batch } from "../../core/signal.ts";
+import { effect } from "../../core/signal.ts";
 import {
   documentText,
   documentMeta,
@@ -10,12 +10,12 @@ import {
   busyLabel,
   refineDraft,
 } from "../../core/store.ts";
-import { t, currentLocale } from "../../i18n/index.ts";
+import { t } from "../../i18n/index.ts";
 import {
   exportDocx,
   exportPdf,
   exportHtml,
-  exportMarkdown,
+  exportMd,
   printDoc,
   applyRefinement,
   beginRefine,
@@ -26,12 +26,12 @@ import {
   saveCurrentToLibrary,
   startOver,
 } from "../../actions.ts";
-import { renderModal, type ModalOptions } from "../components/modal.ts";
+import { renderModal } from "../components/modal.ts";
 import { el, on, delegate } from "../components/dom.ts";
-import { renderProgress } from "../components/progress.ts";
-import { extractHeadings, extractSection, htmlToMarkdown, markdownToHtml } from "../../services/markdown/render.ts";
 import type { DocMeta } from "../../types.ts";
-import { dirOf } from "../../i18n/index.ts";
+import { htmlToMarkdown } from "@/services/markdown/roundtrip.ts";
+import { extractHeadings, extractSection } from "@/services/markdown/sections.ts";
+import { renderMarkdown } from "@/services/markdown/render.ts";
 
 export function renderResultView(): HTMLElement {
   const section = el("section", { class: "result fade-in" });
@@ -64,13 +64,13 @@ function renderDocument(container: HTMLElement): void {
   );
   delegate(actions, "click", "[data-action]", (_e, target) => {
     const a = target.getAttribute("data-action");
-    if (a === "copy") copyDoc();
-    else if (a === "print") printDoc();
-    else if (a === "export-md") exportMarkdown();
-    else if (a === "export-html") exportHtml();
-    else if (a === "export-pdf") exportPdf();
-    else if (a === "export-docx") exportDocx();
-    else if (a === "save") saveCurrentToLibrary();
+    if (a === "copy") void copyDoc();
+    else if (a === "print") void printDoc();
+    else if (a === "export-md") void exportMd();
+    else if (a === "export-html") void exportHtml();
+    else if (a === "export-pdf") void exportPdf();
+    else if (a === "export-docx") void exportDocx();
+    else if (a === "save") void saveCurrentToLibrary();
     else if (a === "new") startOver();
   });
   container.appendChild(actions);
@@ -171,21 +171,6 @@ function startInlineEdit(host: HTMLElement, span: HTMLElement, onCommit: (v: str
   });
 }
 
-function renderSections(): HTMLElement {
-  const root = el("div", {});
-  const headings = extractHeadings(documentText());
-  const sections = documentText().split(/(?=^## )/m).slice(1);
-  if (headings.length === 0) {
-    root.appendChild(el("p", { class: "muted" }, ["No structured content yet."]));
-    return root;
-  }
-  for (let i = 0; i < headings.length; i++) {
-    const content = sections[i] ?? "";
-    root.appendChild(renderSection(headings[i]!, content));
-  }
-  return root;
-}
-
 function renderSection(heading: string, content: string): HTMLElement {
   const section = el("section", { class: "doc-section", id: heading.replace(/\s+/g, "-").toLowerCase() });
 
@@ -231,7 +216,7 @@ function renderSection(heading: string, content: string): HTMLElement {
   if (isEditing) {
     body.textContent = content.replace(/^## .+\n\n/, "");
   } else {
-    body.innerHTML = markdownToHtml(content);
+    body.innerHTML = renderMarkdown(content);
   }
   section.appendChild(body);
   return section;
@@ -246,7 +231,7 @@ function mountRefineModal(root: HTMLElement, heading: string, originalContent: s
     placeholder: t("result.refineModal.promptPlaceholder"),
   }) as HTMLTextAreaElement;
 
-  beginRefine(heading, originalContent, textarea);
+  beginRefine(heading);
   const body = el("div", { class: "refine-modal-body" });
   body.appendChild(promptLabel);
   textarea.addEventListener("input", () => refineDraft.set(textarea.value));

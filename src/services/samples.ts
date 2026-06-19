@@ -29,7 +29,7 @@ export const SAMPLES: Record<DocType, AnswerMap & { title: string }> = {
     nonFunctionalRequirements:
       "Page load < 2s on 3G · 99.9% uptime · WCAG 2.1 AA · support 10K concurrent users · SOC 2 ready.",
     designGuidelines:
-      "Follow Material Design 3 with brand-forward photography · dark mode required · use existing typography (Inter) · accent color reserved for sustainability scores.",
+      "Follow Material Design 3 with brand-forward photography · dark mode required · use existing typography (Cairo) · accent color reserved for sustainability scores.",
     technicalConstraints:
       "Next.js + tRPC · PostgreSQL on AWS RDS · Pinecone for vector search · Salesforce CRM integration · Stripe payments.",
     releaseCriteria:
