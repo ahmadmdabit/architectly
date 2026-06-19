@@ -3,12 +3,14 @@
     "name": "Architectly",
     "tag": "AI Requirements",
     "footer": "Developed by Ahmet FATİHOĞLU — MIT LICENSE © 2026",
-    "lang": "Language"
+    "lang": "Language",
+    "devNotice": "The website under development. Report bug on "
   },
   "nav": {
     "home": "Home",
     "library": "Library",
-    "startOver": "Start over"
+    "startOver": "Start over",
+    "contact": "Contact"
   },
   "welcome": {
     "eyebrow": "AI Interviewer · Document Architect",

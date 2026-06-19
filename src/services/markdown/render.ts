@@ -4,7 +4,7 @@ import DOMPurify from "dompurify";
 
 marked.setOptions({ async: false, gfm: true, breaks: true });
 
-const ALLOWED_CLASSES = new Set([
+const AllowedClasses = new Set([
   "table-wrap",
   "raw",
   "small",
@@ -25,7 +25,7 @@ DOMPurify.addHook("afterSanitizeAttributes", (node) => {
   if (node.hasAttribute("class")) {
     const filtered = (node.getAttribute("class") ?? "")
       .split(/\s+/)
-      .filter((c) => ALLOWED_CLASSES.has(c))
+      .filter((c) => AllowedClasses.has(c))
       .join(" ");
     if (filtered) node.setAttribute("class", filtered);
     else node.removeAttribute("class");

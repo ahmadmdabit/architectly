@@ -2,16 +2,172 @@
 
 // Mobile tweaks shared across views.
 @include respond-to("md") {
-  .container { padding: var(--space-14) var(--space-10); }
-  .welcome { padding-top: var(--space-12); }
-  .welcome-title { font-size: 2rem; }
-  .document-container { padding: var(--space-14); }
-  .document-title { font-size: var(--font-size-10xl); }
-  .question-text { font-size: var(--font-size-8xl); }
-  .modal { width: calc(100vw - var(--space-14)); }
+  .container {
+    padding: var(--space-14) var(--space-10);
+  }
+  .welcome {
+    padding-top: var(--space-12);
+  }
+  .welcome-title {
+    font-size: 2rem;
+  }
+  .document-container {
+    padding: var(--space-14);
+  }
+  .document-title {
+    font-size: var(--font-size-10xl);
+  }
+  .question-text {
+    font-size: var(--font-size-8xl);
+  }
+  .modal {
+    width: calc(100vw - var(--space-14));
+  }
+  .generating-screen {
+    padding: var(--space-16) var(--space-10);
+  }
 }
 
 @include respond-to("sm") {
-  .brand .brand-tag { display: none; }
-  .header-nav .btn { padding: var(--space-4) var(--space-8); font-size: var(--font-size-base); }
+  // Header
+  .brand .brand-tag {
+    display: none;
+  }
+  .brand .brand-name {
+    font-size: var(--font-size-4xl);
+  }
+  .header-inner {
+    gap: var(--space-4);
+  }
+  .header-nav {
+    gap: var(--space-3);
+  }
+  .header-nav .btn {
+    padding: var(--space-3) var(--space-5);
+    font-size: var(--font-size-2xs);
+  }
+  .lang-switch .lang-select {
+    padding: 4px var(--space-6);
+    font-size: var(--font-size-2xs);
+  }
+
+  // Layout & Containers
+  .container {
+    padding: var(--space-10) var(--space-6);
+  }
+  .card {
+    padding: var(--space-10);
+  }
+  .document-container {
+    padding: var(--space-10);
+  }
+  .generating-screen {
+    padding: var(--space-12) var(--space-6);
+  }
+
+  // Typography
+  .welcome-title {
+    font-size: 1.75rem;
+  }
+  .document-title {
+    font-size: var(--font-size-8xl);
+  }
+  .question-text {
+    font-size: var(--font-size-6xl);
+  }
+  .question-description {
+    font-size: var(--font-size-1xl);
+  }
+
+  // Buttons & Groups (Thumb-friendly vertical stacking)
+  .button-group {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-6);
+  }
+  .button-group .btn {
+    width: 100%;
+  }
+  .button-group-right {
+    width: 100%;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  // Result Actions
+  .result-actions {
+    padding: var(--space-6);
+    gap: var(--space-4);
+  }
+  .result-actions-bar {
+    gap: var(--space-4);
+    width: 100%;
+    justify-content: center;
+  }
+  .result-actions .btn {
+    padding: var(--space-4) var(--space-8);
+    font-size: var(--font-size-xs);
+  }
+
+  // Interview
+  .choice-option {
+    padding: var(--space-8);
+  }
+  .multi-text-row {
+    gap: var(--space-4);
+  }
+
+  // Welcome
+  .welcome-cta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-6);
+  }
+
+  // Modal
+  .modal {
+    width: calc(100vw - var(--space-8));
+    max-height: calc(100vh - var(--space-8));
+  }
+  .modal-head {
+    padding: var(--space-8) var(--space-10);
+  }
+  .modal-body {
+    padding: var(--space-10);
+  }
+  .modal-foot {
+    padding: var(--space-8) var(--space-10);
+  }
+  .modal-foot-inner {
+    gap: var(--space-4);
+    flex-direction: column;
+    width: 100%;
+  }
+  .modal-foot-inner .btn {
+    width: 100%;
+  }
+
+  // Footer & Notices
+  .app-footer {
+    padding: var(--space-8) 0;
+  }
+  .footer-meta {
+    font-size: var(--font-size-xs);
+    text-align: center;
+  }
+  .dev-notice {
+    font-size: var(--font-size-2xs);
+    padding: var(--space-2) var(--space-4);
+  }
+
+  // Toasts
+  .toast-stack {
+    bottom: var(--space-8);
+    inset-inline-start: var(--space-8);
+    inset-inline-end: var(--space-8);
+  }
+  .toast {
+    max-width: none;
+    width: 100%;
+  }
 }

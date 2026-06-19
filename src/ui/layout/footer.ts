@@ -11,7 +11,14 @@ export function renderFooter(): HTMLElement {
   effect(() => {
     localeSig();
     clear(inner);
-    inner.appendChild(el("span", { class: "footer-meta" }, [t("app.footer")]));
+    inner.appendChild(
+      el("a", {
+        class: "footer-meta",
+        href: "https://ahmadmdabit.github.io/contact",
+        target: "_blank",
+        rel: "noopener noreferrer",
+      }, [t("app.footer")])
+    );
   });
   return footer;
 }

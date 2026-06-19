@@ -14,7 +14,13 @@
     padding-bottom: 0;
   }
   .footer-meta {
-    color: var(--color-text-muted);
+    color: var(--color-primary);
     font-size: var(--font-size-1xl);
+    text-decoration: none;
+    transition: color var(--transition);
+
+    @include hover {
+      color: var(--color-text);
+    }
   }
 }

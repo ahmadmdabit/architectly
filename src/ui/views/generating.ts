@@ -6,8 +6,8 @@ import { t } from "../../i18n/index.ts";
 import { renderMarkdown } from "../../services/markdown/render.ts";
 import { cancelGeneration } from "../../actions.ts";
 
-const STEP_DELAYS = [0, 1500, 3000, 4500];
-const STEP_IDS = ["organize", "structure", "write", "finalize"] as const;
+const StepDelays = [0, 1500, 3000, 4500];
+const StepIds = ["organize", "structure", "write", "finalize"] as const;
 
 export function renderGeneratingView(): HTMLElement {
   const section = el("section", { class: "generating-screen fade-in" });
@@ -28,7 +28,7 @@ export function renderGeneratingView(): HTMLElement {
 
   // 4-step progress chrome
   const progress = el("div", { class: "generating-progress" });
-  for (const id of STEP_IDS) {
+  for (const id of StepIds) {
     progress.appendChild(
       el("div", { class: "generating-step", id: `gen-step-${id}` }, [
         el("span", { class: "generating-step-icon" }, ["•"]),
@@ -40,10 +40,10 @@ export function renderGeneratingView(): HTMLElement {
 
   // Animate the steps
   const timers: number[] = [];
-  STEP_IDS.forEach((id, i) => {
+  StepIds.forEach((id, i) => {
     timers.push(
-      window.setTimeout(() => document.getElementById(`gen-step-${id}`)?.classList.add("active"), STEP_DELAYS[i]),
-      window.setTimeout(() => document.getElementById(`gen-step-${id}`)?.classList.add("completed"), (STEP_DELAYS[i] ?? 0) + 2000),
+      window.setTimeout(() => document.getElementById(`gen-step-${id}`)?.classList.add("active"), StepDelays[i]),
+      window.setTimeout(() => document.getElementById(`gen-step-${id}`)?.classList.add("completed"), (StepDelays[i] ?? 0) + 2000),
     );
   });
 
@@ -72,6 +72,6 @@ export function renderGeneratingView(): HTMLElement {
   section.appendChild(cancel);
 
   // Cleanup timers on unmount: caller replaces innerHTML, but ensure GC
-  section.addEventListener("__cleanup", () => timers.forEach((t) => clearTimeout(t)));
+  section.addEventListener("@cleanup", () => timers.forEach((t) => clearTimeout(t)));
   return section;
 }

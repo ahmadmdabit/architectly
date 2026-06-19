@@ -64,12 +64,12 @@ async function deriveTitleQuestion(vision: string): Promise<Question> {
   };
 }
 
-/** Advance to the next question, expanding `__derive_title__` placeholders via AI. */
+/** Advance to the next question, expanding `@deriveTitle` placeholders via AI. */
 export async function advanceQuestion(): Promise<void> {
   const pending = [...pendingFollowUps.peek()];
   let next = getNextQuestion(history.peek(), pending, allQuestions.peek());
 
-  if (next && next.id === "__derive_title__") {
+  if (next && next.id === "@deriveTitle") {
     pendingFollowUps.set(pending.slice(1)); // consume the placeholder
     isBusy.set(true);
     busyLabel.set(t("interview.suggestingName"));

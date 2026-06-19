@@ -18,7 +18,7 @@ const ROUTES: Record<Step, string> = {
   library: "library",
 };
 
-const PATH_TO_STEP: Record<string, Step> = {
+const PathToStep: Record<string, Step> = {
   "": "welcome",
   interview: "interview",
   generating: "generating",
@@ -28,7 +28,7 @@ const PATH_TO_STEP: Record<string, Step> = {
 
 function currentPathStep(): Step {
   const raw = window.location.pathname.slice(BASE.length).replace(/\/$/, "");
-  return PATH_TO_STEP[raw] ?? "welcome";
+  return PathToStep[raw] ?? "welcome";
 }
 
 function urlFor(s: Step): string {

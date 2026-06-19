@@ -1,8 +1,8 @@
 // session.ts — localStorage for the in-flight interview, draft, and user settings.
 import type { Locale, SessionSnapshot } from "../../types.ts";
 
-const SESSION_KEY = "architectly:session:v3";
-const SETTINGS_KEY = "architectly:settings:v3";
+const SessionKey = "architectly:session";
+const SettingsKey = "architectly:settings";
 
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -11,11 +11,11 @@ export interface UserSettings {
   showStepDots: boolean;
 }
 
-const DEFAULT_SETTINGS: UserSettings = { locale: "en", showStepDots: true };
+const DefaultSettings: UserSettings = { locale: "en", showStepDots: true };
 
 export function loadSession(): SessionSnapshot | null {
   try {
-    const raw = localStorage.getItem(SESSION_KEY);
+    const raw = localStorage.getItem(SessionKey);
     return raw ? (JSON.parse(raw) as SessionSnapshot) : null;
   } catch {
     return null;
@@ -26,7 +26,7 @@ export function saveSession(snapshot: SessionSnapshot): void {
   if (saveTimer) clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
     try {
-      localStorage.setItem(SESSION_KEY, JSON.stringify(snapshot));
+      localStorage.setItem(SessionKey, JSON.stringify(snapshot));
     } catch {
       /* quota */
     }
@@ -35,7 +35,7 @@ export function saveSession(snapshot: SessionSnapshot): void {
 
 export function clearSession(): void {
   try {
-    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(SessionKey);
   } catch {
     /* ignore */
   }
@@ -43,18 +43,18 @@ export function clearSession(): void {
 
 export function loadSettings(): UserSettings {
   try {
-    const raw = localStorage.getItem(SETTINGS_KEY);
-    if (!raw) return { ...DEFAULT_SETTINGS };
-    return { ...DEFAULT_SETTINGS, ...(JSON.parse(raw) as Partial<UserSettings>) };
+    const raw = localStorage.getItem(SettingsKey);
+    if (!raw) return { ...DefaultSettings };
+    return { ...DefaultSettings, ...(JSON.parse(raw) as Partial<UserSettings>) };
   } catch {
-    return { ...DEFAULT_SETTINGS };
+    return { ...DefaultSettings };
   }
 }
 
 export function saveSettings(patch: Partial<UserSettings>): void {
   try {
     const current = loadSettings();
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...current, ...patch }));
+    localStorage.setItem(SettingsKey, JSON.stringify({ ...current, ...patch }));
   } catch {
     /* ignore */
   }

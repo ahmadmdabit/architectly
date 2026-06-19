@@ -10,10 +10,10 @@ import ar from "./locales/ar.json";
 import type { Direction, Locale } from "../types.ts";
 
 export const SUPPORTED: readonly Locale[] = ["en", "tr", "ar"] as const;
-export const RTL_LOCALES: ReadonlySet<Locale> = new Set<Locale>(["ar"]);
+export const RtlLocales: ReadonlySet<Locale> = new Set<Locale>(["ar"]);
 
 export function dirOf(locale: Locale): Direction {
-  return RTL_LOCALES.has(locale) ? "rtl" : "ltr";
+  return RtlLocales.has(locale) ? "rtl" : "ltr";
 }
 
 export function applyHtmlAttrs(locale: Locale): void {

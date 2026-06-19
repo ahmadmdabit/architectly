@@ -94,7 +94,7 @@ function renderRailHistory(): HTMLElement {
     if (h.skipped) li.appendChild(el("span", { class: "tag tag-skipped" }, [t("interview.skipped")]));
     list.appendChild(li);
   }
-  delegate(list, "click", ".rail-history-item", (_e, target) => {
+  delegate(list, "click", ".rail-history-item", (_vnt, target) => {
     const id = target.getAttribute("data-id");
     if (id) void jumpToAnswered(id);
   });
@@ -109,7 +109,7 @@ function renderRailHistory(): HTMLElement {
   return list;
 }
 
-function renderHistoryList(_open: boolean): HTMLElement {
+function renderHistoryList(_doesOpen: boolean): HTMLElement {
   const ol = el("ol", { class: "history-list" });
   for (const [i, h] of history().entries()) {
     const li = el("li", {});
@@ -180,7 +180,7 @@ function renderInputFor(q: Question): HTMLElement {
         updateRemoveBtns(container);
         row.querySelector("input")?.focus();
       });
-      delegate(container, "click", ".multi-text-remove", (_e, target) => {
+      delegate(container, "click", ".multi-text-remove", (_vnt, target) => {
         target.closest(".multi-text-row")?.remove();
         updateRemoveBtns(container);
       });

@@ -12,7 +12,7 @@ import {
 import { fallbackTitleFromVision } from "../interview/engine.ts";
 
 const MODEL = "openai/gpt-oss-120b:free";
-const AI_TIMEOUT_MS = 300_000;
+const AiTimeoutMs = 300000;
 
 interface PuterAI {
   chat: (
@@ -123,7 +123,7 @@ export async function deriveProjectTitle(vision: string, locale: Locale, signal?
     const prompt = buildDeriveTitlePrompt(vision, locale);
     const raw = await withTimeout(
       puter.ai.chat(prompt, { model: MODEL }) as Promise<unknown>,
-      30_000,
+      30000,
       "Title derivation",
       signal,
     );
@@ -154,7 +154,7 @@ export async function generateAssumption(
   const prompt = buildAssumePrompt(question, history, docType, locale);
   const raw = await withTimeout(
     puter.ai.chat(prompt, { model: MODEL }) as Promise<unknown>,
-    60_000,
+    60000,
     "Assumption",
     signal,
   );
@@ -197,13 +197,13 @@ export async function generateDocumentStream(
   };
 
   try {
-    return await withTimeout(tryStream(), AI_TIMEOUT_MS, "Document generation", signal);
+    return await withTimeout(tryStream(), AiTimeoutMs, "Document generation", signal);
   } catch (e) {
     if ((e as Error).name === "AbortError") throw e;
     // Non-streaming fallback
     const raw = await withTimeout(
       puter.ai.chat(prompt, { model: MODEL }) as Promise<unknown>,
-      AI_TIMEOUT_MS,
+      AiTimeoutMs,
       "Document generation",
       signal,
     );
@@ -225,7 +225,7 @@ export async function refineDocumentSection(
   const prompt = buildRefinePrompt(docType, heading, originalContent, instruction, locale);
   const raw = await withTimeout(
     puter.ai.chat(prompt, { model: MODEL }) as Promise<unknown>,
-    AI_TIMEOUT_MS,
+    AiTimeoutMs,
     "Section refinement",
     signal,
   );

@@ -3,12 +3,14 @@
     "name": "Architectly",
     "tag": "Yapay Zekâ Gereksinimleri",
     "footer": "Geliştiren Ahmet FATİHOĞLU — MIT LİSANSI © 2026",
-    "lang": "Dil"
+    "lang": "Dil",
+    "devNotice": "Web sitesi geliştirme aşamasında. Hata bildirmek için: "
   },
   "nav": {
     "home": "Ana sayfa",
     "library": "Kitaplık",
-    "startOver": "Baştan başla"
+    "startOver": "Baştan başla",
+    "contact": "İletişim"
   },
   "welcome": {
     "eyebrow": "AI Görüşmeci · Doküman Mimarı",

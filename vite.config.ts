@@ -20,14 +20,21 @@ export default defineConfig({
     target: "es2022",
     sourcemap: false,
     rollupOptions: {
+      input: {
+        main: './index.html',     // Original entry
+        '404': './404.html',      // Add 404 as second entry
+      },
       output: {
-        manualChunks(id: string): string | undefined {
-          if (id.includes("node_modules/marked") || id.includes("node_modules/dompurify")) return "vendor-md";
-          if (id.includes("node_modules/i18next")) return "vendor-i18n";
-          if (id.includes("node_modules/jspdf")) return "vendor-pdf";
-          if (id.includes("node_modules/docx")) return "vendor-docx";
-          return undefined;
-        },
+        // manualChunks(id: string): string | undefined {
+        //   if (id.includes("node_modules/marked") || id.includes("node_modules/dompurify")) return "vendor-md";
+        //   if (id.includes("node_modules/i18next")) return "vendor-i18n";
+        //   if (id.includes("node_modules/jspdf")) return "vendor-pdf";
+        //   if (id.includes("node_modules/docx")) return "vendor-docx";
+        //   return undefined;
+        // },
+        chunkFileNames: 'chunks/[name].[hash].js',
+        entryFileNames: 'entries/[name].[hash].js',
+        assetFileNames: 'assets/[name].[hash].[ext]',
       },
     },
   },

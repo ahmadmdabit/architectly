@@ -3,21 +3,21 @@
 // resume an interview from any answered question.
 import type { SavedDocument } from "../../types.ts";
 
-const DB_NAME = "architectly";
-const DB_VERSION = 1;
-const STORE = "documents";
-const MAX_DOCS = 100;
+const DbName = "architectly";
+const DbVersion = 1;
+const Store = "documents";
+const MaxDocs = 100;
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 
 function openDb(): Promise<IDBDatabase> {
   if (dbPromise) return dbPromise;
   dbPromise = new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    const req = indexedDB.open(DbName, DbVersion);
     req.onupgradeneeded = (): void => {
       const db = req.result;
-      if (!db.objectStoreNames.contains(STORE)) {
-        const store = db.createObjectStore(STORE, { keyPath: "id" });
+      if (!db.objectStoreNames.contains(Store)) {
+        const store = db.createObjectStore(Store, { keyPath: "id" });
         store.createIndex("by_updated", "updatedAt");
         store.createIndex("by_title", "title");
       }
@@ -31,8 +31,8 @@ function openDb(): Promise<IDBDatabase> {
 async function tx<T>(mode: IDBTransactionMode, fn: (store: IDBObjectStore) => IDBRequest<T>): Promise<T> {
   const db = await openDb();
   return new Promise<T>((resolve, reject) => {
-    const transaction = db.transaction(STORE, mode);
-    const store = transaction.objectStore(STORE);
+    const transaction = db.transaction(Store, mode);
+    const store = transaction.objectStore(Store);
     const req = fn(store);
     req.onsuccess = (): void => resolve(req.result);
     req.onerror = (): void => reject(req.error ?? new Error("IndexedDB request failed"));
@@ -40,7 +40,7 @@ async function tx<T>(mode: IDBTransactionMode, fn: (store: IDBObjectStore) => ID
 }
 
 export function newId(): string {
-  return `doc_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+  return `doc@${Date.now().toString(36)}@${Math.random().toString(36).slice(2, 8)}`;
 }
 
 export async function listAll(): Promise<SavedDocument[]> {
@@ -70,8 +70,8 @@ export async function rename(id: string, newTitle: string): Promise<void> {
 
 async function enforceLimit(): Promise<void> {
   const all = await listAll();
-  if (all.length <= MAX_DOCS) return;
-  const overflow = all.slice(MAX_DOCS);
+  if (all.length <= MaxDocs) return;
+  const overflow = all.slice(MaxDocs);
   for (const doc of overflow) await remove(doc.id);
 }
 

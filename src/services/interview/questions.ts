@@ -3,7 +3,7 @@
 // English defaults; the i18n layer can replace them at render time via the question id.
 import type { Question } from "../../types.ts";
 
-export const SHARED_QUESTIONS: readonly Question[] = [
+export const SharedQuestions: readonly Question[] = [
   {
     id: "vision",
     category: "Core",
@@ -16,7 +16,7 @@ export const SHARED_QUESTIONS: readonly Question[] = [
     followUp: (_answer, all) => {
       const title = typeof all.title === "string" ? all.title : "";
       if (title.trim().length > 0) return [];
-      return [{ id: "__derive_title__", dynamic: true, category: "Core", priority: "high", type: "text", text: "" }];
+      return [{ id: "@deriveTitle", dynamic: true, category: "Core", priority: "high", type: "text", text: "" }];
     },
   },
   {
@@ -75,7 +75,7 @@ export const SHARED_QUESTIONS: readonly Question[] = [
   },
 ];
 
-export const PRD_QUESTIONS: readonly Question[] = [
+export const PrdQuestions: readonly Question[] = [
   {
     id: "userPersonas",
     category: "Users",
@@ -142,7 +142,7 @@ export const PRD_QUESTIONS: readonly Question[] = [
   },
 ];
 
-export const BRD_QUESTIONS: readonly Question[] = [
+export const BrdQuestions: readonly Question[] = [
   {
     id: "businessObjectives",
     category: "Goals",
@@ -182,5 +182,5 @@ export const BRD_QUESTIONS: readonly Question[] = [
 ];
 
 export function getQuestionsForType(type: "PRD" | "BRD"): readonly Question[] {
-  return type === "PRD" ? [...SHARED_QUESTIONS, ...PRD_QUESTIONS] : [...SHARED_QUESTIONS, ...BRD_QUESTIONS];
+  return type === "PRD" ? [...SharedQuestions, ...PrdQuestions] : [...SharedQuestions, ...BrdQuestions];
 }

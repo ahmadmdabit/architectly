@@ -1,0 +1,29 @@
+@use "../abstracts/_v-mixins" as *;
+
+.dev-notice {
+  background: var(--sp-dark);
+  color: var(--color-text);
+  text-align: center;
+  padding: var(--space-3) var(--space-8);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  border-bottom: var(--border-width-thin) solid var(--color-border);
+  
+  @include respond-to("md") {
+    font-size: var(--font-size-xs);
+    padding: var(--space-2) var(--space-6);
+  }
+}
+
+.dev-notice-link {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-all;
+  direction: ltr;
+  unicode-bidi: embed;
+  
+  @include hover {
+    color: var(--color-primary-hover);
+  }
+}

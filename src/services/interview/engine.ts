@@ -51,7 +51,7 @@ export function summarizeAnswers(history: readonly HistoryEntry[], docType: DocT
   };
 }
 
-const STOP_WORDS = new Set([
+const StopWords = new Set([
   "we", "are", "building", "create", "making", "a", "an", "the", "for", "to", "of", "and", "with",
   "that", "this", "is", "it", "in", "on", "our", "their", "they", "users", "user", "customers",
   "customer", "people", "teams", "team", "so", "can", "be", "have", "has", "do", "does", "from",
@@ -63,7 +63,7 @@ export function fallbackTitleFromVision(vision: string): string {
   const words = vision
     .replace(/[^\p{L}\p{N}\s]/gu, " ")
     .split(/\s+/)
-    .filter((w) => w && !STOP_WORDS.has(w.toLowerCase()) && w.length > 2);
+    .filter((w) => w && !StopWords.has(w.toLowerCase()) && w.length > 2);
   if (words.length === 0) return "Untitled Project";
   return words
     .slice(0, 3)

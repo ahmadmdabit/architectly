@@ -62,7 +62,7 @@ function renderDocument(container: HTMLElement): void {
   actions.querySelector(".result-actions-bar")!.appendChild(
     el("button", { class: "btn btn-secondary btn-sm", type: "button", "data-action": "new" }, [t("result.newDocument")]),
   );
-  delegate(actions, "click", "[data-action]", (_e, target) => {
+  delegate(actions, "click", "[data-action]", (_vnt, target) => {
     const a = target.getAttribute("data-action");
     if (a === "copy") void copyDoc();
     else if (a === "print") void printDoc();

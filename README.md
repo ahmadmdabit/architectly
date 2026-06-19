@@ -2,15 +2,22 @@
 
 AI-powered, interview-driven BRD/PRD generator. Client-only, 100% TypeScript/HTML5/SCSS.
 
+<p align="center">
+  <a href="#" target="_blank">
+    <img src="public/assets/images/logo.svg" width="128" alt="Architectly Logo">
+  </a>
+</p>
+
 ## Stack
 
 - **TypeScript** (strict, ES2022 target)
-- **Vite** (hybrid build: app shell + lazy chunks for PDF/DOCX/i18n)
+- **Vite** (multi-entry build + async chunking for heavy exports)
 - **Puter.js** (`openai/gpt-oss-120b:free`) for AI
-- **i18next** (en/tr/ar with RTL)
+- **i18next** (EN/TR/AR with RTL)
 - **marked + DOMPurify** for safe Markdown rendering
 - **jspdf + docx** for exports
 - @fontsource/cairo (npm package)
+- Fully responsive, mobile-first UI with thumb-friendly layouts
 - No JavaScript or CSS frameworks
 
 ## Scripts
@@ -20,7 +27,7 @@ yarn install
 yarn dev          # local dev server
 yarn typecheck    # tsc --noEmit
 yarn lint         # eslint
-yarn build        # tsc check + vite build
+yarn build        # tsc check + asset hashing + vite build
 yarn preview      # serve dist/
 yarn deploy       # build + push to gh-pages branch
 ```
@@ -43,18 +50,18 @@ src/
 ├── router/                History API + sessionStorage SPA-shim restore
 ├── i18n/                  i18next + en/tr/ar JSON locales
 └── ui/
-    ├── shell/             header + footer + lang switch
+    ├── layout/            header + footer + lang switch
     ├── components/        toast, modal, banner, progress, inputs, focusTrap
     └── views/             welcome, interview, generating, result, library
 ```
 
 ### Routes
 
-- `/`           Welcome
-- `/interview`  Active interview
+- `/` Welcome
+- `/interview` Active interview
 - `/generating` AI streaming
-- `/result`     Generated document (edit/refine/export)
-- `/library`    Up to 100 saved documents (search/open/resume/rename/delete/export)
+- `/result` Generated document (edit/refine/export)
+- `/library` Up to 100 saved documents (search/open/resume/rename/delete/export)
 
 ### State management
 
@@ -89,7 +96,10 @@ src/
 ## GitHub Pages deployment
 
 `vite.config.ts` sets `base: "/architectly/"` in production. `public/404.html` is the SPA shim that preserves deep links across the GH Pages 404 fallback by stashing the original path in `sessionStorage`; the router restores it on boot.
+`404.html` is built as a secondary Vite entry point alongside `index.html`. It acts as the SPA shim that preserves deep links across the GH Pages 404 fallback by stashing the original path in `sessionStorage`; the router restores it on boot.
+
+Static assets (like the logo) are served from `public/` and automatically appended with a SHA-1 hash query parameter (`?v=%VITE_ASSET_HASH%`) via a pre-build Node script (`scripts/asset-hash-refresh.mjs`) to ensure aggressive cache busting on GH Pages.
 
 ## License
 
-MIT © 2026 Ahmet Fatihoğlu
+[MIT](LICENSE) © 2026 Ahmet Fatihoğlu

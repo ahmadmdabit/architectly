@@ -7,7 +7,7 @@ export function generateFallbackDocument(summary: DocSummary, history: readonly 
   const isBRD = docType === "BRD";
   const date = new Date().toLocaleString();
   let doc = `# ${summary.title} — ${docType}\n\n`;
-  doc += `_Generated locally (offline mode) on ${date}._\n\n`;
+  doc += `*Generated locally (offline mode) on ${date}.*\n\n`;
   doc += `## 1. Executive Summary\n\n${lo(summary.vision)}\n\n`;
   doc += `## 2. Problem Statement\n\n${lo(summary.problemStatement)}\n\n`;
   if (isBRD) {
@@ -33,7 +33,7 @@ export function generateFallbackDocument(summary: DocSummary, history: readonly 
     doc += `## 15. AI-Generated Assumptions (to validate)\n\n`;
     for (const a of assumed) {
       const ans = Array.isArray(a.answer) ? a.answer.join("; ") : a.answer;
-      doc += `- **ASSUMPTION [${a.id}]:** ${ans} — _Source: AI-assumed based on related answers._\n`;
+      doc += `- **ASSUMPTION [${a.id}]:** ${ans} — *Source: AI-assumed based on related answers.*\n`;
     }
     doc += "\n";
   }

@@ -1,5 +1,5 @@
 // header.ts — Sticky glass header: brand + nav (lang + library + start-over).
-import logoUrl from "../../assets/images/logo.svg";
+import logoUrl from "/assets/images/logo.svg";
 import { clear, el, on } from "../components/dom.ts";
 import { effect } from "../../core/signal.ts";
 import { step, history as historySig, documentText as documentTextSig } from "../../core/store.ts";
@@ -24,7 +24,7 @@ export function renderHeader(): HTMLElement {
     // Brand
     const brand = el("a", { class: "brand", href: "#", "aria-label": "Architectly home" }, [
       el("span", { class: "brand-mark", "aria-hidden": "true" }, [(() => {
-        const img = el("img", { src: logoUrl, alt: "" });
+        const img = el("img", { src: `${logoUrl}${(process.env.NODE_ENV === "production" ? `?v=${import.meta.env.VITE_ASSET_HASH}` : ``)}`, alt: "" });
         return img;
       })()]),
       el("span", { class: "brand-name" }, [t("app.name")]),
@@ -45,6 +45,14 @@ export function renderHeader(): HTMLElement {
     const nav = el("nav", { class: "header-nav" });
     nav.appendChild(renderLangSwitch());
 
+    const contactLink = el("a", {
+      class: "btn btn-ghost btn-sm",
+      href: "https://ahmadmdabit.github.io/contact",
+      target: "_blank",
+      rel: "noopener noreferrer",
+    }, [t("nav.contact")]);
+    nav.appendChild(contactLink);
+    
     const libBtn = el("button", { class: "btn btn-ghost btn-sm", type: "button" }, [t("nav.library")]);
     on(libBtn, "click", () => navigate("library"));
     nav.appendChild(libBtn);

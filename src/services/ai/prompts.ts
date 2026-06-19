@@ -1,10 +1,10 @@
 // prompts.ts — All AI prompt builders, locale-aware.
 import type { DocSummary, DocType, HistoryEntry, Locale, Question } from "../../types.ts";
 
-const LANG_NAME: Record<Locale, string> = { en: "English", tr: "Turkish", ar: "Arabic" };
+const LangName: Record<Locale, string> = { en: "English", tr: "Turkish", ar: "Arabic" };
 
 const langClause = (locale: Locale): string =>
-  `Respond ONLY in ${LANG_NAME[locale]}. All headings, prose, lists and tables must be in ${LANG_NAME[locale]}.`;
+  `Respond ONLY in ${LangName[locale]}. All headings, prose, lists and tables must be in ${LangName[locale]}.`;
 
 export function buildDeriveTitlePrompt(vision: string, locale: Locale): string {
   return `You are a senior product manager naming a new product.
@@ -40,7 +40,7 @@ Produce a concise, sensible, professional assumption (2–4 sentences) the AI ca
 ${langClause(locale)}`;
 }
 
-const PRD_STRUCTURE = `Structure (use EXACTLY these H2 headings in this order):
+const PrdStructure = `Structure (use EXACTLY these H2 headings in this order):
 # <Title> — Product Requirements Document
 ## 1. Executive Summary
 ## 2. Problem Statement & Opportunity
@@ -55,7 +55,7 @@ const PRD_STRUCTURE = `Structure (use EXACTLY these H2 headings in this order):
 ## 11. Risks, Assumptions & Open Questions
 ## 12. Milestones & Timeline`;
 
-const BRD_STRUCTURE = `Structure (use EXACTLY these H2 headings in this order):
+const BrdStructure = `Structure (use EXACTLY these H2 headings in this order):
 # <Title> — Business Requirements Document
 ## 1. Executive Summary
 ## 2. Business Objectives & Success Criteria
@@ -77,7 +77,7 @@ export function buildGenerationPrompt(
   locale: Locale,
 ): string {
   const isBRD = docType === "BRD";
-  const structure = isBRD ? BRD_STRUCTURE : PRD_STRUCTURE;
+  const structure = isBRD ? BrdStructure : PrdStructure;
 
   const assumed = history
     .filter((h) => h.assumed)

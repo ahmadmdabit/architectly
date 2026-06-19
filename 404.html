@@ -16,12 +16,24 @@
                worker-src 'self' blob: https://js.puter.com;" />
   <title>Architectly — AI-Powered BRD/PRD Generator</title>
   <link rel="icon" type="image/svg+xml" href="/assets/images/logo.svg?v=%VITE_ASSET_HASH%" />
-  <script src="https://js.puter.com/v2/" defer></script>
+  <script>
+    // GH Pages SPA shim: rewrite deep links to index.html with the original path
+    // preserved in sessionStorage so the router can restore it on boot.
+    (function () {
+      var segments = location.pathname.split("/").filter(Boolean);
+      var base = segments.length > 0 ? "/" + segments[0] + "/" : "/";
+      var rest = location.pathname.slice(base.length) + location.search + location.hash;
+      sessionStorage.setItem("arch:redirect", "/" + rest);
+      location.replace(base);
+    })();
+  </script>
 </head>
 
 <body>
-  <div id="app" aria-label="Architectly"></div>
-  <script type="module" src="/src/main.ts"></script>
+  <div style="text-align: center;">
+    <h1>PAGE NOT FOUND</h1>
+    <h3>404</h3>
+  </div>
 </body>
 
 </html>

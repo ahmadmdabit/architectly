@@ -16,6 +16,7 @@ import { mountApp } from "./ui/host.ts";
 import { loadSession, loadSettings, saveSession, saveSettings } from "./services/storage/session.ts";
 import { getQuestionsForType } from "./services/interview/questions.ts";
 import { docType } from "./core/store.ts";
+import "./styles/main.scss";
 
 async function boot(): Promise<void> {
   const settings = loadSettings();
